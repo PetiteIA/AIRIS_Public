@@ -1,5 +1,7 @@
 import pygame
 import time, sys, csv
+
+from numpy.core.multiarray import ndarray
 from pygame.locals import QUIT, KEYDOWN
 from game_objects import *
 from constants import *
@@ -20,11 +22,11 @@ INCREASE_FRONT = 4
 DECREASE = 5
 EAT = 6
 # Directions
-LEFT = 0
-DOWN = 1
-RIGHT = 2
-UP = 3
-ROTATION = np.array([[0, -1], [1, 0], [0, 1], [-1, 0]])
+UP = 0
+LEFT = 1
+DOWN = 2
+RIGHT = 3
+DIRECTIONS = np.array([[0, -1], [-1, 0], [0, 1], [1, 0]])
 
 
 class PyGameView(object):
@@ -63,14 +65,17 @@ class PyGameView(object):
     def draw_game_map(self):
 
         # variable setup
-        w, h = GAME_MAP_GRID # number of positions wide and high
+        w, h = GAME_MAP_GRID  # number of positions wide and high
         ms = GAME_MAP_START
 
         # draw each position in the grid
         for x in range(w):
             for y in range(h):
                 if self.model.change_in_game_map[x][y]:
-                    self.model.game_map[x][y].draw_game_image(self, x, y)
+                    if isinstance(self.model.game_map[x][y], Character):
+                        self.model.game_map[x][y].draw_game_image(self, x, y, 90 * self.model.direction)
+                    else:
+                        self.model.game_map[x][y].draw_game_image(self, x, y)
 
     def draw_representation_map(self):
 
@@ -112,7 +117,7 @@ class Model(object):
         self.controller = controller
 
         # Egocentric smell setup
-        # self.character_current_pos = (0, 0)  # np.array([0, 0])
+        self.character_current_pos = np.array([0, 0])
         self.direction = UP
         self.previous_smell = 0
         self.smell_feedback = np.array([
@@ -134,12 +139,11 @@ class Model(object):
             for y in range(GAME_MAP_GRID[1]):
                 self.screen_input[x].append(0.0)
         self.aux_input = [self.keys_collected, self.extinguishers_collected]
-        self.action_space = ['up', 'down', 'left', 'right', 'nothing']
+        self.action_space = ['up', 'down', 'left', 'right', 'nothing', 'forward', 'turn_left', 'turn_right']
         self.ai_controlled = ai_controlled
         self.time_counter = 0
 
-
-    # this function updates the model
+    # This function updates the model
     def update(self):
 
         pprint('-------------------------------------------- TIME STEP %d --------------------------------------------'
@@ -212,19 +216,28 @@ class Model(object):
     def game_logic(self, player_input):
 
         if player_input != 'nothing':
+            character_new_pos = self.character_current_pos.copy()
             if player_input == 'up':
-                character_new_pos = (self.character_current_pos[0], self.character_current_pos[1] - 1)
+                character_new_pos += np.array([0, -1])
             if player_input == 'down':
-                character_new_pos = (self.character_current_pos[0], self.character_current_pos[1] + 1)
+                character_new_pos += np.array([0, 1])
             if player_input == 'left':
-                character_new_pos = (self.character_current_pos[0] - 1, self.character_current_pos[1])
+                character_new_pos += np.array([-1, 0])
             if player_input == 'right':
-                character_new_pos = (self.character_current_pos[0] + 1, self.character_current_pos[1])
-            # if player_input == 'forward':
+                character_new_pos += np.array([1, 0])
+            if player_input == 'forward':
+                character_new_pos += DIRECTIONS[self.direction]
+            if player_input == "turn_left":
+                self.direction = {LEFT: DOWN, DOWN: RIGHT, RIGHT: UP, UP: LEFT}[self.direction]
+            if player_input == "turn_right":
+                self.direction = {LEFT: UP, DOWN: LEFT, RIGHT: DOWN, UP: RIGHT}[self.direction]
 
             new_tile = self.game_map[character_new_pos[0]][character_new_pos[1]]
             if isinstance(new_tile, Floor):
                 self.move_character(new_tile, character_new_pos, self.character)
+
+            elif isinstance(new_tile, Character):
+                self.change_in_game_map[self.character_current_pos[0]][self.character_current_pos[1]] = True
 
             elif isinstance(new_tile, Wall):
                 pass
@@ -265,8 +278,7 @@ class Model(object):
                 if self.keys_collected == 0:
                     pass
                 else:
-                    self.move_character(new_tile, \
-                        character_new_pos, self.character_on_open_door)
+                    self.move_character(new_tile, character_new_pos, self.character_on_open_door)
                     self.keys_collected -= 1
 
             elif isinstance(new_tile, OpenDoor):
@@ -279,27 +291,22 @@ class Model(object):
     def move_character(self, new_tile, character_new_pos, character_and_floor):
 
         character_old_floor = self.character_current_floor
-        character_old_pos = self.character_current_pos
+        character_old_pos = np.array(self.character_current_pos)
 
         if character_and_floor != self.character_on_open_door:
             self.character_current_floor = new_tile
         else:
             self.character_current_floor = self.open_door
-        self.character_current_pos = character_new_pos
+
+        self.character_current_pos[:] = character_new_pos
 
         self.game_map[self.character_current_pos[0]][self.character_current_pos[1]] = character_and_floor
 
         self.change_in_game_map[self.character_current_pos[0]][self.character_current_pos[1]] = True
 
-        self.game_map\
-        [character_old_pos[0]] \
-        [character_old_pos[1]] \
-        = character_old_floor
+        self.game_map[character_old_pos[0]][character_old_pos[1]] = character_old_floor
 
-        self.change_in_game_map\
-        [character_old_pos[0]] \
-        [character_old_pos[1]] \
-        = True
+        self.change_in_game_map[character_old_pos[0]][character_old_pos[1]] = True
 
     def collect_battery(self, character_new_pos):
 
@@ -336,7 +343,7 @@ class Model(object):
 
                 if r == 0:
                     self.character_start_pos = (row[0], row[1])
-                    self.character_current_pos = ([row[0], row[1]])
+                    self.character_current_pos[:] = ([row[0], row[1]])
                     self.character_current_floor = self.floor
                     self.num_batteries = row[2]
                 else:
@@ -438,8 +445,8 @@ class Model(object):
             if type == 'd':
                 game_map[x][y] = self.down_arrow
         return game_map
-    def make_singletons(self):
 
+    def make_singletons(self):
         self.character    = Character()
         self.floor        = Floor()
         self.wall         = Wall()
@@ -534,8 +541,23 @@ class PyGameKeyboardController(object):
             self.player_input = 'right'
             number_of_keys_pressed += 1
             # print('right')
+        if keys[pygame.K_KP8]:
+            is_there_input = True
+            self.player_input = 'forward'
+            number_of_keys_pressed += 1
+            print('forward')
+        if keys[pygame.K_KP4]:
+            is_there_input = True
+            self.player_input = 'turn_left'
+            number_of_keys_pressed += 1
+            print('turn_left')
+        if keys[pygame.K_KP6]:
+            is_there_input = True
+            self.player_input = 'turn_right'
+            number_of_keys_pressed += 1
+            print('turn_right')
         if number_of_keys_pressed > 1:
-            # print('>1')
+            print(self.player_input, '>1')
             self.player_input = original_player_input
         elif number_of_keys_pressed == 0:
             self.player_input = 'nothing'
