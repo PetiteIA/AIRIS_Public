@@ -1,7 +1,5 @@
 import pygame
 import time, sys, csv
-
-from numpy.core.multiarray import ndarray
 from pygame.locals import QUIT, KEYDOWN
 from game_objects import *
 from constants import *
@@ -113,7 +111,7 @@ class Model(object):
         '''
 
         # game setup parameters
-        self.show = True # show current model
+        self.show = True  # show current model
         self.controller = controller
 
         # Egocentric smell setup
@@ -126,6 +124,9 @@ class Model(object):
             [DECREASE, STABLE,        INCREASE_RIGHT, INCREASE_FRONT],
             [DECREASE, DECREASE,      DECREASE,       INCREASE_FRONT]
         ])
+
+        self.character_current_floor = None
+        self.change_in_game_map = np.full((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), False, dtype=bool)
 
         # maze game setup
         self.make_singletons()
@@ -150,7 +151,7 @@ class Model(object):
             % self.time_counter, new_line_start=True, draw_line=False)
         self.time_counter += 1
 
-        self.set_change_in_game_map(False)
+        self.change_in_game_map[:, :] = False
 
         player_action = 'nothing'
 
@@ -236,6 +237,7 @@ class Model(object):
             if isinstance(new_tile, Floor):
                 self.move_character(new_tile, character_new_pos, self.character)
 
+            # Redraw the character for the case it turned in place
             elif isinstance(new_tile, Character):
                 self.change_in_game_map[self.character_current_pos[0]][self.character_current_pos[1]] = True
 
@@ -299,13 +301,9 @@ class Model(object):
             self.character_current_floor = self.open_door
 
         self.character_current_pos[:] = character_new_pos
-
         self.game_map[self.character_current_pos[0]][self.character_current_pos[1]] = character_and_floor
-
         self.change_in_game_map[self.character_current_pos[0]][self.character_current_pos[1]] = True
-
         self.game_map[character_old_pos[0]][character_old_pos[1]] = character_old_floor
-
         self.change_in_game_map[character_old_pos[0]][character_old_pos[1]] = True
 
     def collect_battery(self, character_new_pos):
@@ -374,17 +372,18 @@ class Model(object):
 
     def get_next_maze(self):
 
-        self.set_change_in_game_map(True)
+        # Refresh all tiles to be redrawn
+        self.change_in_game_map[:, :] = True
 
         self.current_maze += 1
 
         try:
-            self.load_maze();
+            self.load_maze()
 
         except FileNotFoundError:
             self.current_maze = 1
             try:
-                self.load_maze();
+                self.load_maze()
             except FileNotFoundError:
                 print('ERROR: No levels to load!')
                 print('Use the included level editor to create levels and place them in /custom_levels')
@@ -466,16 +465,6 @@ class Model(object):
         self.character_on_up_arrow    = CharacterOnUpArrow()
         self.character_on_open_door   = CharacterOnOpenDoor()
 
-    # this function is used to render the game faster
-    # by only rendering the parts of the game that
-    # changed from the previous time step
-    def set_change_in_game_map(self, state):
-        self.change_in_game_map = []
-        for x in range(GAME_MAP_GRID[0]):
-            self.change_in_game_map.append([])
-            for y in range(GAME_MAP_GRID[1]):
-                self.change_in_game_map[x].append(state)
-
 
 class PyGameKeyboardController(object):
     '''
@@ -499,7 +488,7 @@ class PyGameKeyboardController(object):
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         mouse_pos = pygame.mouse.get_pos()
 
-                        #print('mouse position = (%d,%d)') % (mouse_pos[0], mouse_pos[1])
+                        # print('mouse position = (%d,%d)') % (mouse_pos[0], mouse_pos[1])
 
                         if event.button == 4:
                             print('mouse wheel scroll up')
@@ -633,9 +622,7 @@ if __name__ == '__main__':
                     # load the next level or reload the current level
                     # on win or death without having to click anything
 
-
-        time.sleep(0.10) # control frame rate (in seconds)
-
+        time.sleep(0.10)  # control frame rate (in seconds)
 
     pygame.quit()
     sys.exit()
