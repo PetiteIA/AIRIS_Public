@@ -19,6 +19,13 @@ INCREASE_RIGHT = 3
 INCREASE_FRONT = 4
 DECREASE = 5
 EAT = 6
+SMELL_FEEDBACK = np.array([
+    [STABLE, INCREASE_RIGHT, INCREASE_LEFT, INCREASE_FRONT],
+    [DECREASE, INCREASE_RIGHT, STABLE, INCREASE_FRONT],
+    [DECREASE, STABLE, INCREASE_LEFT, INCREASE_FRONT],
+    [DECREASE, DECREASE, DECREASE, INCREASE_FRONT]
+])
+
 # Directions
 UP = 0
 LEFT = 1
@@ -121,13 +128,8 @@ class Model(object):
         self.character_current_pos = np.array([0, 0])
         self.direction = UP
         self.previous_smell = 0
-        self.smell_feedback = np.array([
-            [STABLE,   INCREASE_LEFT, INCREASE_RIGHT, INCREASE_FRONT],
-            [DECREASE, INCREASE_LEFT, STABLE,         INCREASE_FRONT],
-            [DECREASE, STABLE,        INCREASE_RIGHT, INCREASE_FRONT],
-            [DECREASE, DECREASE,      DECREASE,       INCREASE_FRONT]
-        ])
 
+        self.grid = np.zeros((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), dtype=int)
         self.character_current_floor = None
         self.change_in_game_map = np.full((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), False, dtype=bool)
 
@@ -216,7 +218,7 @@ class Model(object):
         self.aux_input[0] = self.keys_collected
         self.aux_input[1] = self.extinguishers_collected
 
-    # these functions controls game logic
+    # These functions control game logic
     def game_logic(self, player_input):
 
         if player_input != 'nothing':
@@ -293,6 +295,9 @@ class Model(object):
                 self.move_character(new_tile, character_new_pos, self.character)
                 self.collect_key(character_new_pos)
 
+        # Return the feedback
+        self.smell()
+
     def move_character(self, new_tile, character_new_pos, character_and_floor):
 
         character_old_floor = self.character_current_floor
@@ -348,6 +353,8 @@ class Model(object):
                     self.character_current_floor = self.floor
                     self.num_batteries = row[2]
                 else:
+                    # Initialize the grid
+                    self.grid[row[0]][row[1]] = row[2]
                     if row[2] == 1:
                         game_map[row[0]][row[1]] = self.character
                     if row[2] == 2:
@@ -376,6 +383,7 @@ class Model(object):
     def get_next_maze(self):
 
         # Refresh all tiles to be redrawn
+        self.grid[:, :] = 0
         self.change_in_game_map[:, :] = True
 
         self.current_maze += 1
@@ -467,6 +475,28 @@ class Model(object):
         self.character_on_down_arrow  = CharacterOnDownArrow()
         self.character_on_up_arrow    = CharacterOnUpArrow()
         self.character_on_open_door   = CharacterOnOpenDoor()
+
+    def smell(self):
+        """Return the smell feedback"""
+        smell_up_left = np.any(self.grid[:self.character_current_pos[0] + 1,
+                               :self.character_current_pos[1] + 1] == BATTERY)
+        smell_down_left = np.any(self.grid[:self.character_current_pos[0] + 1,
+                                 self.character_current_pos[1]:] == BATTERY)
+        smell_up_right = np.any(self.grid[self.character_current_pos[0]:,
+                                :self.character_current_pos[1] + 1] == BATTERY)
+        smell_down_right = np.any(self.grid[self.character_current_pos[0]:,
+                                  self.character_current_pos[1]:] == BATTERY)
+        # print(f"Smell up-left:{smell_up_left}, up-right:{smell_up_right}, down-left:{smell_down_left}, down-right:{smell_down_right}")
+        smell_left = {LEFT: smell_down_left, DOWN: smell_down_right, RIGHT: smell_up_right, UP: smell_up_left}[
+            self.direction]
+        smell_right = {LEFT: smell_up_left, DOWN: smell_down_left, RIGHT: smell_down_right, UP: smell_up_right}[
+            self.direction]
+        smell = 2 * smell_left + smell_right
+        # print(f"Smell feedback: {smell:b}")
+        result = SMELL_FEEDBACK[self.previous_smell, smell]
+        # print(f"Result {result}")
+        self.previous_smell = smell
+        return result
 
 
 class PyGameKeyboardController(object):
