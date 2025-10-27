@@ -85,7 +85,10 @@ class PyGameView(object):
         for x in range(w):
             for y in range(h):
                 if self.model.change_in_game_map[x][y]:
-                    self.model.game_map[x][y].draw_representation_image(self, x, y)
+                    if isinstance(self.model.game_map[x][y], Character):
+                        self.model.game_map[x][y].draw_representation_image(self, x, y, 90 * self.model.direction)
+                    else:
+                        self.model.game_map[x][y].draw_representation_image(self, x, y)
 
     def draw_text(self, text, x, y, size, color = (100, 100, 100)):
         basicfont = pygame.font.SysFont(None, size)
@@ -530,17 +533,17 @@ class PyGameKeyboardController(object):
             self.player_input = 'right'
             number_of_keys_pressed += 1
             # print('right')
-        if keys[pygame.K_KP8]:
+        if keys[pygame.K_KP8] or keys[pygame.K_8]:
             is_there_input = True
             self.player_input = 'forward'
             number_of_keys_pressed += 1
             print('forward')
-        if keys[pygame.K_KP4]:
+        if keys[pygame.K_KP4] or keys[pygame.K_4]:
             is_there_input = True
             self.player_input = 'turn_left'
             number_of_keys_pressed += 1
             print('turn_left')
-        if keys[pygame.K_KP6]:
+        if keys[pygame.K_KP6] or keys[pygame.K_6]:
             is_there_input = True
             self.player_input = 'turn_right'
             number_of_keys_pressed += 1
