@@ -14,6 +14,7 @@ TURN_LEFT = 2
 TURN_RIGHT = 1
 # Outcomes
 STABLE = 0
+FEEL_WALL = 1
 BUMP = 1
 INCREASE_LEFT = 2
 INCREASE_RIGHT = 3
@@ -88,15 +89,6 @@ class PyGameView(object):
         w, h = REP_MAP_GRID # number of positions wide and high
         ms = REP_MAP_START
 
-        # draw each position in the grid
-        for x in range(w):
-            for y in range(h):
-                if self.model.change_in_game_map[x][y]:
-                    if isinstance(self.model.game_map[x][y], Character):
-                        self.model.game_map[x][y].draw_representation_image(self, x, y, 90 * self.model.direction)
-                    else:
-                        self.model.game_map[x][y].draw_representation_image(self, x, y)
-
         # Redraw the changed representations
         for key, spright in self.model.changes_in_rep.items():
             spright.draw_representation_image(self, key[0], key[1])
@@ -108,6 +100,15 @@ class PyGameView(object):
             if isinstance(spright, Wall) or isinstance(spright, Floor):
                 self.model.changes_in_rep[(key[0], key[1])] = None
         self.model.changes_in_rep = {k: v for k, v in self.model.changes_in_rep.items() if v is not None}
+
+        # draw each position in the grid
+        for x in range(w):
+            for y in range(h):
+                if self.model.change_in_game_map[x][y]:
+                    if isinstance(self.model.game_map[x][y], Character):
+                        self.model.game_map[x][y].draw_representation_image(self, x, y, 90 * self.model.direction)
+                    else:
+                        self.model.game_map[x][y].draw_representation_image(self, x, y)
 
     def draw_text(self, text, x, y, size, color=(100, 100, 100)):
         basicfont = pygame.font.SysFont(None, size)
@@ -267,8 +268,10 @@ class Model(object):
             if not np.array_equal(feel_pos, self.character_current_pos):
                 if self.grid[feel_pos[0]][feel_pos[1]] == 2:
                     self.changes_in_rep[(feel_pos[0], feel_pos[1])] = self.feel_wall_sprite
+                    return FEEL_WALL  # Don't smell
                 else:
                     self.changes_in_rep[(feel_pos[0], feel_pos[1])] = self.feel_empty_sprite
+                    return STABLE  # Don't smell
 
             new_tile = self.game_map[character_new_pos[0]][character_new_pos[1]]
             if isinstance(new_tile, Floor):
