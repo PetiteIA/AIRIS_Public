@@ -209,15 +209,16 @@ class Model(object):
         # output post-action environment to ai
         self.current_environment()
 
+        # Save the screenshot
+        # pygame.image.save(view.screen, f"logs/{self.time_counter:03}.png")
+
         '''
-        
         Send the new self.screen_input and self.aux_input to your ai so that it can see what changed.
         No return value necessary.
         
         EXAMPLE:
         
         ai.capture_post_environment(self.screen_input, self.aux_input)
-        
         '''
 
     def get_action(self):
