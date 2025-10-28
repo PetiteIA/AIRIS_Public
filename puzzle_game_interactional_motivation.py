@@ -6,6 +6,7 @@ from constants import *
 from other_useful_functions import pprint
 import datetime
 import numpy as np
+from game_objects_color import BumpSpright
 
 # Actions
 FORWARD = 0
@@ -97,7 +98,17 @@ class PyGameView(object):
                     else:
                         self.model.game_map[x][y].draw_representation_image(self, x, y)
 
-    def draw_text(self, text, x, y, size, color = (100, 100, 100)):
+        # Redraw the changed representations
+        for key, spright in self.model.changes_in_rep.items():
+            spright.draw_representation_image(self, key[0], key[1])
+            # Prepare for next update
+            if isinstance(spright, BumpSpright):
+                self.model.changes_in_rep[(key[0], key[1])] = self.model.wall
+            if isinstance(spright, Wall):
+                self.model.changes_in_rep[(key[0], key[1])] = None
+        self.model.changes_in_rep = {k: v for k, v in self.model.changes_in_rep.items() if v is not None}
+
+    def draw_text(self, text, x, y, size, color=(100, 100, 100)):
         basicfont = pygame.font.SysFont(None, size)
         text_render = basicfont.render(
             text, True, color)
@@ -128,6 +139,8 @@ class Model(object):
         self.character_current_pos = np.array([0, 0])
         self.direction = UP
         self.previous_smell = 0
+        self.outcome = STABLE
+        self.changes_in_rep = {}
 
         self.grid = np.zeros((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), dtype=int)
         self.character_current_floor = None
@@ -182,7 +195,8 @@ class Model(object):
         pprint('ACTION:\t%s' % player_action, new_line_start=True, draw_line=False)
 
         # update the game according to the player's input
-        self.game_logic(player_action)
+        self.outcome = self.game_logic(player_action)
+        print(f"OUTCOME:\t{self.outcome}")
 
         # go to next level if player beats the current level
         if self.batteries_collected == self.num_batteries:
@@ -221,6 +235,8 @@ class Model(object):
     # These functions control game logic
     def game_logic(self, player_input):
 
+        outcome = STABLE
+
         if player_input != 'nothing':
             character_new_pos = self.character_current_pos.copy()
             if player_input == 'up':
@@ -246,12 +262,15 @@ class Model(object):
             elif isinstance(new_tile, Character):
                 self.change_in_game_map[self.character_current_pos[0]][self.character_current_pos[1]] = True
 
+            # Return the BUMP outcome
             elif isinstance(new_tile, Wall):
-                pass
+                self.changes_in_rep[(character_new_pos[0], character_new_pos[1])] = self.bump_spright
+                outcome = BUMP
 
             elif isinstance(new_tile, Battery):
                 self.move_character(new_tile, character_new_pos, self.character)
                 self.collect_battery(character_new_pos)
+                outcome = EAT
 
             elif isinstance(new_tile, RightArrow):
                 if player_input != 'left':
@@ -295,8 +314,11 @@ class Model(object):
                 self.move_character(new_tile, character_new_pos, self.character)
                 self.collect_key(character_new_pos)
 
-        # Return the feedback
-        self.smell()
+        smell_outcome = self.smell()
+        # If not bump then smell_outcome
+        if not outcome:
+            outcome = smell_outcome
+        return outcome
 
     def move_character(self, new_tile, character_new_pos, character_and_floor):
 
@@ -384,6 +406,7 @@ class Model(object):
 
         # Refresh all tiles to be redrawn
         self.grid[:, :] = 0
+        self.direction = UP
         self.change_in_game_map[:, :] = True
 
         self.current_maze += 1
@@ -475,6 +498,7 @@ class Model(object):
         self.character_on_down_arrow  = CharacterOnDownArrow()
         self.character_on_up_arrow    = CharacterOnUpArrow()
         self.character_on_open_door   = CharacterOnOpenDoor()
+        self.bump_spright = BumpSpright()
 
     def smell(self):
         """Return the smell feedback"""

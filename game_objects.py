@@ -269,6 +269,6 @@ class CharacterOnOpenDoor(CharacterOnObject):
 class Mover(GameObject):
 
     def __init__(self):
-        super(Mover, self).__init__(18.0, \
-                                    './images/Puzzle_Game/Game/SpikeS_0.png', \
+        super(Mover, self).__init__(18.0,
+                                    './images/Puzzle_Game/Game/SpikeS_0.png',
                                     './images/Puzzle_Game/Represent/Represent_18.png')
