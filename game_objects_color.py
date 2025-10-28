@@ -9,9 +9,9 @@ class GameObjectColor(object):
         # Store id and position pixel size
         self.id = identification_number
 
-        # get representation image
+        # Color square
         self.rep = pygame.Surface(REP_POS_SIZE)
-        self.rep.fill(color)
+        self.rep.fill(pygame.Color(color))
 
     def draw_game_image(self, view, x, y, direction=0):
         pass
@@ -26,6 +26,16 @@ class GameObjectColor(object):
         pygame.display.flip()
 
 
-class BumpSpright(GameObjectColor):
+class BumpSprite(GameObjectColor):
     def __init__(self):
-        super(BumpSpright, self).__init__(19.0, (255, 0, 0))
+        super(BumpSprite, self).__init__(19.0, "#FF0000")
+
+
+class FeelEmptySprite(GameObjectColor):
+    def __init__(self):
+        super(FeelEmptySprite, self).__init__(19.0, "#c0c0c0")
+
+
+class FeelWallSprite(GameObjectColor):
+    def __init__(self):
+        super(FeelWallSprite, self).__init__(19.0, "#000000")

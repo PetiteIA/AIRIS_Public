@@ -6,7 +6,7 @@ from constants import *
 from other_useful_functions import pprint
 import datetime
 import numpy as np
-from game_objects_color import BumpSpright
+from game_objects_color import BumpSprite, GameObjectColor, FeelEmptySprite, FeelWallSprite
 
 # Actions
 FORWARD = 0
@@ -62,9 +62,8 @@ class PyGameView(object):
         # draw control key
         if self.show_controls:
             for n, line in enumerate(PUZZLE_GAME_CONTROL_KEY):
-                self.draw_text(line, PUZZLE_GAME_CONTROL_KEY_START[0], \
-                    PUZZLE_GAME_CONTROL_KEY_START[1]+14*n, 20)
-
+                self.draw_text(line, PUZZLE_GAME_CONTROL_KEY_START[0],
+                               PUZZLE_GAME_CONTROL_KEY_START[1]+14*n, 20)
         # update display
         pygame.display.update()
 
@@ -102,9 +101,11 @@ class PyGameView(object):
         for key, spright in self.model.changes_in_rep.items():
             spright.draw_representation_image(self, key[0], key[1])
             # Prepare for next update
-            if isinstance(spright, BumpSpright):
+            if isinstance(spright, BumpSprite) or isinstance(spright, FeelWallSprite):
                 self.model.changes_in_rep[(key[0], key[1])] = self.model.wall
-            if isinstance(spright, Wall):
+            if isinstance(spright, FeelEmptySprite):
+                self.model.changes_in_rep[(key[0], key[1])] = self.model.floor
+            if isinstance(spright, Wall) or isinstance(spright, Floor):
                 self.model.changes_in_rep[(key[0], key[1])] = None
         self.model.changes_in_rep = {k: v for k, v in self.model.changes_in_rep.items() if v is not None}
 
@@ -210,7 +211,7 @@ class Model(object):
         self.current_environment()
 
         # Save the screenshot
-        # pygame.image.save(view.screen, f"logs/{self.time_counter:03}.png")
+        pygame.image.save(view.screen, f"logs/{self.time_counter:03}.png")
 
         '''
         Send the new self.screen_input and self.aux_input to your ai so that it can see what changed.
@@ -240,6 +241,7 @@ class Model(object):
 
         if player_input != 'nothing':
             character_new_pos = self.character_current_pos.copy()
+            feel_pos = self.character_current_pos.copy()
             if player_input == 'up':
                 character_new_pos += np.array([0, -1])
             if player_input == 'down':
@@ -254,6 +256,19 @@ class Model(object):
                 self.direction = {LEFT: DOWN, DOWN: RIGHT, RIGHT: UP, UP: LEFT}[self.direction]
             if player_input == "turn_right":
                 self.direction = {LEFT: UP, DOWN: LEFT, RIGHT: DOWN, UP: RIGHT}[self.direction]
+            if player_input == 'feel_left':
+                feel_pos += DIRECTIONS[(self.direction + 1) % 4]
+            if player_input == 'feel_front':
+                feel_pos += DIRECTIONS[self.direction]
+            if player_input == 'feel_right':
+                feel_pos += DIRECTIONS[(self.direction - 1) % 4]
+
+            # Display the feel interaction in the representation
+            if not np.array_equal(feel_pos, self.character_current_pos):
+                if self.grid[feel_pos[0]][feel_pos[1]] == 2:
+                    self.changes_in_rep[(feel_pos[0], feel_pos[1])] = self.feel_wall_sprite
+                else:
+                    self.changes_in_rep[(feel_pos[0], feel_pos[1])] = self.feel_empty_sprite
 
             new_tile = self.game_map[character_new_pos[0]][character_new_pos[1]]
             if isinstance(new_tile, Floor):
@@ -265,7 +280,7 @@ class Model(object):
 
             # Return the BUMP outcome
             elif isinstance(new_tile, Wall):
-                self.changes_in_rep[(character_new_pos[0], character_new_pos[1])] = self.bump_spright
+                self.changes_in_rep[(character_new_pos[0], character_new_pos[1])] = self.bump_sprite
                 outcome = BUMP
 
             elif isinstance(new_tile, Battery):
@@ -499,7 +514,9 @@ class Model(object):
         self.character_on_down_arrow  = CharacterOnDownArrow()
         self.character_on_up_arrow    = CharacterOnUpArrow()
         self.character_on_open_door   = CharacterOnOpenDoor()
-        self.bump_spright = BumpSpright()
+        self.bump_sprite = BumpSprite()
+        self.feel_empty_sprite = FeelEmptySprite()
+        self.feel_wall_sprite = FeelWallSprite()
 
     def smell(self):
         """Return the smell feedback"""
@@ -592,17 +609,29 @@ class PyGameKeyboardController(object):
             is_there_input = True
             self.player_input = 'forward'
             number_of_keys_pressed += 1
-            print('forward')
         if keys[pygame.K_KP4] or keys[pygame.K_4]:
             is_there_input = True
             self.player_input = 'turn_left'
             number_of_keys_pressed += 1
-            print('turn_left')
         if keys[pygame.K_KP6] or keys[pygame.K_6]:
             is_there_input = True
             self.player_input = 'turn_right'
             number_of_keys_pressed += 1
-            print('turn_right')
+        if keys[pygame.K_KP1]:
+            is_there_input = True
+            self.player_input = 'feel_left'
+            number_of_keys_pressed += 1
+        if keys[pygame.K_KP2]:
+            is_there_input = True
+            self.player_input = 'feel_front'
+            number_of_keys_pressed += 1
+        if keys[pygame.K_KP3]:
+            is_there_input = True
+            self.player_input = 'feel_right'
+            number_of_keys_pressed += 1
+
+        if number_of_keys_pressed > 0:
+            print(self.player_input)
         if number_of_keys_pressed > 1:
             print(self.player_input, '>1')
             self.player_input = original_player_input
