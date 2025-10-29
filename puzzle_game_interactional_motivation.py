@@ -2,11 +2,14 @@ import pygame
 import time, sys, csv
 from pygame.locals import QUIT, KEYDOWN
 from game_objects import *
-from constants import *
+# from constants import *
 from other_useful_functions import pprint
 import datetime
 import numpy as np
 from game_objects_color import BumpSprite, GameObjectColor, FeelEmptySprite, FeelWallSprite
+
+GAME_SCREEN_SIZE = (965, 370)
+GAME_MAP_GRID = (13, 10)
 
 # Actions
 FORWARD = 0
