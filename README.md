@@ -155,7 +155,8 @@ By default, it is set to be human controlled with the arrow keys. This can be ch
 ## puzzle_game_interactional_motivation.py
 
 This is an example of using AIRIS in an interactional motivation scenario.
-(under development)
+(under development).
+See [documentation](docs/interactional_motivation.md).
 
 ## mnist_driver2.py
 Number recognition using the MNIST hand-written character dataset.
