@@ -2,14 +2,12 @@ import pygame
 import time, sys, csv
 from pygame.locals import QUIT, KEYDOWN
 from game_objects import *
-# from constants import *
+from constants import GAME_MAP_GRID, GAME_MAP_START, GAME_SHOW_SCREEN, GAME_SCREEN_SIZE, REP_MAP_GRID, BATTERY
 from other_useful_functions import pprint
 import datetime
 import numpy as np
-from game_objects_color import BumpSprite, GameObjectColor, FeelEmptySprite, FeelWallSprite
+from game_objects_color import BumpSprite, FeelEmptySprite, FeelWallSprite
 
-GAME_SCREEN_SIZE = (965, 370)
-GAME_MAP_GRID = (13, 10)
 
 # Actions
 FORWARD = 0
@@ -47,8 +45,8 @@ class PyGameView(object):
     def __init__(self, model):
 
         self.model = model
-        self.screen = pygame.display.set_mode(GAME_SCREEN_SIZE) # a pygame screen
-        self.surface = pygame.Surface(GAME_SCREEN_SIZE) # a pygame surface is the thing you draw on
+        self.screen = pygame.display.set_mode(GAME_SCREEN_SIZE)  # a pygame screen
+        self.surface = pygame.Surface(GAME_SCREEN_SIZE)  # a pygame surface is the thing you draw on
 
         self.show_view = True # toggle display
         self.show_controls = False # toggle control display
@@ -89,7 +87,7 @@ class PyGameView(object):
     def draw_representation_map(self):
 
         # variable setup
-        w, h = REP_MAP_GRID # number of positions wide and high
+        w, h = REP_MAP_GRID  # number of positions wide and high
         ms = REP_MAP_START
 
         # Redraw the changed representations

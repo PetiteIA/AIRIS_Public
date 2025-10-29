@@ -1,6 +1,5 @@
 import pygame
-from pygame.locals import *
-from constants import *
+from constants import REP_MAP_START, REP_POS_SIZE
 
 
 class GameObjectColor(object):

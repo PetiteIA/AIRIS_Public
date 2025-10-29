@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 import time
-from constants import *
+from constants import GAME_MAP_START, GAME_POS_SIZE, REP_MAP_START, REP_POS_SIZE
 
 
 class GameObject(object):
