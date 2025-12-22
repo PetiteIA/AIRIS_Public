@@ -25,6 +25,6 @@ Observe the outcome of actions in the console output:
 | 3    | Smell increase right       |
 | 4    | Smell increase front       |
 | 5    | Smell decrease             |
-| 6    | Target reached             |
+| 6    | Target reached and eaten   |
 
 See the tutorial [IM_Tutorial.ipynb](IM_Tutorial.ipynb)
