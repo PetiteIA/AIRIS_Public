@@ -66,3 +66,4 @@ WALL = 2
 BATTERY = 3
 DOOR = 4
 
+MAX_SMELL = 15

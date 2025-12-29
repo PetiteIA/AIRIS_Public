@@ -2,12 +2,13 @@ import pygame
 import time, sys, csv
 from pygame.locals import QUIT, KEYDOWN
 from game_objects import *
-from constants import GAME_MAP_GRID, GAME_MAP_START, GAME_SHOW_SCREEN, GAME_SCREEN_SIZE, REP_MAP_GRID, BATTERY
+from constants import GAME_MAP_GRID, GAME_MAP_START, GAME_SHOW_SCREEN, GAME_SCREEN_SIZE, REP_MAP_GRID, BATTERY, WALL, \
+    PUZZLE_GAME_CONTROL_KEY, PUZZLE_GAME_CONTROL_KEY_START, MAX_SMELL
 from other_useful_functions import pprint
 import datetime
 import numpy as np
 from game_objects_color import BumpSprite, FeelEmptySprite, FeelWallSprite
-
+import networkx as nx
 
 # Actions
 FORWARD = 0
@@ -91,14 +92,16 @@ class PyGameView(object):
         ms = REP_MAP_START
 
         # Redraw the changed representations
-        for key, spright in self.model.changes_in_rep.items():
-            spright.draw_representation_image(self, key[0], key[1])
+        for key, sprite in self.model.changes_in_rep.items():
+            sprite.draw_representation_image(self, key[0], key[1])
             # Prepare for next update
-            if isinstance(spright, BumpSprite) or isinstance(spright, FeelWallSprite):
+            if isinstance(sprite, BumpSprite) or isinstance(sprite, FeelWallSprite):
                 self.model.changes_in_rep[(key[0], key[1])] = self.model.wall
-            if isinstance(spright, FeelEmptySprite):
+            if isinstance(sprite, FeelEmptySprite):
                 self.model.changes_in_rep[(key[0], key[1])] = self.model.floor
-            if isinstance(spright, Wall) or isinstance(spright, Floor):
+                smell_color = mcolors.to_hex(self.model.smell_color_map(self.model.smell_grid[key[0]][key[1]] / MAX_SMELL))
+                self.model.changes_in_rep[(key[0], key[1])].set_smell(smell_color)
+            if isinstance(sprite, Wall) or isinstance(sprite, Floor):
                 self.model.changes_in_rep[(key[0], key[1])] = None
         self.model.changes_in_rep = {k: v for k, v in self.model.changes_in_rep.items() if v is not None}
 
@@ -106,6 +109,8 @@ class PyGameView(object):
         for x in range(w):
             for y in range(h):
                 if self.model.change_in_game_map[x][y]:
+                    smell_color = mcolors.to_hex(self.model.smell_color_map(self.model.smell_grid[x][y]/MAX_SMELL))
+                    self.model.game_map[x][y].set_smell(smell_color)
                     if isinstance(self.model.game_map[x][y], Character):
                         self.model.game_map[x][y].draw_representation_image(self, x, y, 90 * self.model.direction)
                     else:
@@ -145,9 +150,12 @@ class Model(object):
         self.outcome = STABLE
         self.changes_in_rep = {}
 
-        self.grid = np.zeros((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), dtype=int)
+        self.display_grid = np.zeros((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), dtype=int)
         self.character_current_floor = None
         self.change_in_game_map = np.full((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), False, dtype=bool)
+        self.smell_grid = np.full(self.display_grid.shape, MAX_SMELL)
+        self.smell_graph = None
+        self.smell_color_map = mcolors.LinearSegmentedColormap.from_list("custom_gradient", ["#00ff00", "white"])
 
         # maze game setup
         self.make_singletons()
@@ -267,7 +275,7 @@ class Model(object):
 
             # Display the feel interaction in the representation
             if not np.array_equal(feel_pos, self.character_current_pos):
-                if self.grid[feel_pos[0]][feel_pos[1]] == 2:
+                if self.display_grid[feel_pos[0]][feel_pos[1]] == 2:
                     self.changes_in_rep[(feel_pos[0], feel_pos[1])] = self.feel_wall_sprite
                     return FEEL_WALL  # Don't smell
                 else:
@@ -396,7 +404,7 @@ class Model(object):
                     self.num_batteries = row[2]
                 else:
                     # Initialize the grid
-                    self.grid[row[0]][row[1]] = row[2]
+                    self.display_grid[row[0]][row[1]] = row[2]
                     if row[2] == 1:
                         game_map[row[0]][row[1]] = self.character
                     if row[2] == 2:
@@ -425,7 +433,7 @@ class Model(object):
     def get_next_maze(self):
 
         # Refresh all tiles to be redrawn
-        self.grid[:, :] = 0
+        self.display_grid[:, :] = 0
         self.direction = UP
         self.change_in_game_map[:, :] = True
 
@@ -444,6 +452,28 @@ class Model(object):
                 print('They must be named 1.csv, 2.csv, 3.csv, ...')
                 interrupt = input()
                 raise Exception
+
+        # The smell graph
+        self.smell_graph = nx.Graph()
+        for r in range(self.display_grid.shape[0]):
+            for c in range(self.display_grid.shape[1]):
+                if self.display_grid[r, c] == WALL:
+                    continue  # skip walls
+                for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                    nr, nc = r + dr, c + dc
+                    if 0 <= nr < self.display_grid.shape[0] and 0 <= nc < self.display_grid.shape[1] and \
+                            self.display_grid[nr, nc] != WALL:
+                        self.smell_graph.add_edge((r, c), (nr, nc), weight=1)
+        # --- Identify target cells ---
+        targets = [(r, c) for r in range(self.display_grid.shape[0]) for c in range(self.display_grid.shape[1])
+                   if self.display_grid[r, c] == BATTERY]
+        # --- Compute shortest distances from each cell to the nearest target ---
+        self.smell_grid[:, :] = MAX_SMELL
+        for target in targets:
+            lengths = nx.single_source_dijkstra_path_length(self.smell_graph, target)
+            for (r, c), dist in lengths.items():
+                self.smell_grid[r, c] = min(self.smell_grid[r, c], dist)
+        print(self.smell_grid)
 
         self.batteries_collected = 0
         self.extinguishers_collected = 0
@@ -464,18 +494,22 @@ class Model(object):
         for x in range(left, right+1):
             game_map[x][y] = self.wall
         return game_map
+
     def draw_wall_col(self, game_map, bottom, top, x):
         for y in range(bottom, top+1):
             game_map[x][y] = self.wall
         return game_map
+
     def draw_fire_row(self, game_map, left, right, y):
         for x in range(left, right+1):
             game_map[x][y] = self.fire
         return game_map
+
     def draw_fire_col(self, game_map, bottom, top, x):
         for y in range(bottom, top+1):
             game_map[x][y] = self.fire
         return game_map
+
     def draw_arrow_row(self, game_map, left, right, y, type):
         for x in range(left, right+1):
             if type == 'r':
@@ -487,6 +521,7 @@ class Model(object):
             if type == 'd':
                 game_map[x][y] = self.down_arrow
         return game_map
+
     def draw_arrow_col(self, game_map, bottom, top, x, type):
         for y in range(bottom, top+1):
             if type == 'r':
@@ -524,13 +559,13 @@ class Model(object):
 
     def smell(self):
         """Return the smell feedback"""
-        smell_up_left = np.any(self.grid[:self.character_current_pos[0] + 1,
+        smell_up_left = np.any(self.display_grid[:self.character_current_pos[0] + 1,
                                :self.character_current_pos[1] + 1] == BATTERY)
-        smell_down_left = np.any(self.grid[:self.character_current_pos[0] + 1,
+        smell_down_left = np.any(self.display_grid[:self.character_current_pos[0] + 1,
                                  self.character_current_pos[1]:] == BATTERY)
-        smell_up_right = np.any(self.grid[self.character_current_pos[0]:,
+        smell_up_right = np.any(self.display_grid[self.character_current_pos[0]:,
                                 :self.character_current_pos[1] + 1] == BATTERY)
-        smell_down_right = np.any(self.grid[self.character_current_pos[0]:,
+        smell_down_right = np.any(self.display_grid[self.character_current_pos[0]:,
                                   self.character_current_pos[1]:] == BATTERY)
         # print(f"Smell up-left:{smell_up_left}, up-right:{smell_up_right}, down-left:{smell_down_left}, down-right:{smell_down_right}")
         smell_left = {LEFT: smell_down_left, DOWN: smell_down_right, RIGHT: smell_up_right, UP: smell_up_left}[
