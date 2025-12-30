@@ -9,26 +9,18 @@ import datetime
 import numpy as np
 from game_objects_color import BumpSprite, FeelEmptySprite, FeelWallSprite
 import networkx as nx
+from imosc import Interaction, Agent
 
 # Actions
 FORWARD = 0
 TURN_LEFT = 2
 TURN_RIGHT = 1
 # Outcomes
-STABLE = 0
-FEEL_WALL = 1
-BUMP = 1
-INCREASE_LEFT = 2
-INCREASE_RIGHT = 3
-INCREASE_FRONT = 4
-DECREASE = 5
-EAT = 6
-SMELL_FEEDBACK = np.array([
-    [STABLE, INCREASE_RIGHT, INCREASE_LEFT, INCREASE_FRONT],
-    [DECREASE, INCREASE_RIGHT, STABLE, INCREASE_FRONT],
-    [DECREASE, STABLE, INCREASE_LEFT, INCREASE_FRONT],
-    [DECREASE, DECREASE, DECREASE, INCREASE_FRONT]
-])
+DECREASE = 0
+STABLE = 1
+INCREASE = 2
+BUMP = 3
+EAT = 4
 
 # Directions
 UP = 0
@@ -173,6 +165,9 @@ class Model(object):
         self.ai_controlled = ai_controlled
         self.time_counter = 0
 
+        # IMOSC setup
+        self.imosc = None
+
     # This function updates the model
     def update(self):
 
@@ -202,6 +197,7 @@ class Model(object):
             player_action = ai.capture_current_environment(self.screen_input, self.aux_input)
             
             '''
+            player_action = self.imosc.action(self.outcome)
 
         pprint('ACTION:\t%s' % player_action, new_line_start=True, draw_line=False)
 
@@ -248,6 +244,13 @@ class Model(object):
     def game_logic(self, player_input):
 
         outcome = STABLE
+        front_position = self.character_current_pos + DIRECTIONS[self.direction]
+        left_position = self.character_current_pos + DIRECTIONS[(self.direction + 1) % 4]
+        right_position = self.character_current_pos + DIRECTIONS[self.direction - 1]
+        position_smell = self.smell_grid[tuple(self.character_current_pos)]
+        front_smell = self.smell_grid[tuple(front_position)]
+        left_smell = self.smell_grid[tuple(left_position)]
+        right_smell = self.smell_grid[tuple(right_position)]
 
         if player_input != 'nothing':
             character_new_pos = self.character_current_pos.copy()
@@ -262,10 +265,14 @@ class Model(object):
                 character_new_pos += np.array([1, 0])
             if player_input == 'forward':
                 character_new_pos += DIRECTIONS[self.direction]
+                new_front_smell = self.smell_grid[tuple(character_new_pos + DIRECTIONS[self.direction])]
+                outcome = STABLE + (new_front_smell < front_smell) - (new_front_smell > front_smell)
             if player_input == "turn_left":
-                self.direction = {LEFT: DOWN, DOWN: RIGHT, RIGHT: UP, UP: LEFT}[self.direction]
+                outcome = STABLE + (left_smell < front_smell) - (left_smell > front_smell)
+                self.direction = (self.direction + 1) % 4
             if player_input == "turn_right":
-                self.direction = {LEFT: UP, DOWN: LEFT, RIGHT: DOWN, UP: RIGHT}[self.direction]
+                outcome = STABLE + (right_smell < front_smell) - (right_smell > front_smell)
+                self.direction = (self.direction + 3) % 4
             if player_input == 'feel_left':
                 feel_pos += DIRECTIONS[(self.direction + 1) % 4]
             if player_input == 'feel_front':
@@ -275,12 +282,15 @@ class Model(object):
 
             # Display the feel interaction in the representation
             if not np.array_equal(feel_pos, self.character_current_pos):
-                if self.display_grid[feel_pos[0]][feel_pos[1]] == 2:
-                    self.changes_in_rep[(feel_pos[0], feel_pos[1])] = self.feel_wall_sprite
-                    return FEEL_WALL  # Don't smell
+                if self.display_grid[tuple(feel_pos)] == 2:
+                    self.changes_in_rep[tuple(feel_pos)] = self.feel_wall_sprite
+                    feel_smell = self.smell_grid[tuple(feel_pos)]
+                    outcome = STABLE + (feel_smell < position_smell) - (feel_smell > position_smell)
+                    return BUMP  # Don't smell
                 else:
-                    self.changes_in_rep[(feel_pos[0], feel_pos[1])] = self.feel_empty_sprite
-                    return STABLE  # Don't smell
+                    self.changes_in_rep[tuple(feel_pos)] = self.feel_empty_sprite
+                    feel_smell = self.smell_grid[tuple(feel_pos)]
+                    return STABLE + (feel_smell < position_smell) - (feel_smell > position_smell)
 
             new_tile = self.game_map[character_new_pos[0]][character_new_pos[1]]
             if isinstance(new_tile, Floor):
@@ -288,11 +298,11 @@ class Model(object):
 
             # Redraw the character for the case it turned in place
             elif isinstance(new_tile, Character):
-                self.change_in_game_map[self.character_current_pos[0]][self.character_current_pos[1]] = True
+                self.change_in_game_map[tuple(self.character_current_pos)] = True
 
             # Return the BUMP outcome
             elif isinstance(new_tile, Wall):
-                self.changes_in_rep[(character_new_pos[0], character_new_pos[1])] = self.bump_sprite
+                self.changes_in_rep[tuple(character_new_pos)] = self.bump_sprite
                 outcome = BUMP
 
             elif isinstance(new_tile, Battery):
@@ -342,10 +352,6 @@ class Model(object):
                 self.move_character(new_tile, character_new_pos, self.character)
                 self.collect_key(character_new_pos)
 
-        smell_outcome = self.smell()
-        # If not bump then smell_outcome
-        if not outcome:
-            outcome = smell_outcome
         return outcome
 
     def move_character(self, new_tile, character_new_pos, character_and_floor):
@@ -557,28 +563,6 @@ class Model(object):
         self.feel_empty_sprite = FeelEmptySprite()
         self.feel_wall_sprite = FeelWallSprite()
 
-    def smell(self):
-        """Return the smell feedback"""
-        smell_up_left = np.any(self.display_grid[:self.character_current_pos[0] + 1,
-                               :self.character_current_pos[1] + 1] == BATTERY)
-        smell_down_left = np.any(self.display_grid[:self.character_current_pos[0] + 1,
-                                 self.character_current_pos[1]:] == BATTERY)
-        smell_up_right = np.any(self.display_grid[self.character_current_pos[0]:,
-                                :self.character_current_pos[1] + 1] == BATTERY)
-        smell_down_right = np.any(self.display_grid[self.character_current_pos[0]:,
-                                  self.character_current_pos[1]:] == BATTERY)
-        # print(f"Smell up-left:{smell_up_left}, up-right:{smell_up_right}, down-left:{smell_down_left}, down-right:{smell_down_right}")
-        smell_left = {LEFT: smell_down_left, DOWN: smell_down_right, RIGHT: smell_up_right, UP: smell_up_left}[
-            self.direction]
-        smell_right = {LEFT: smell_up_left, DOWN: smell_down_left, RIGHT: smell_down_right, UP: smell_up_right}[
-            self.direction]
-        smell = 2 * smell_left + smell_right
-        # print(f"Smell feedback: {smell:b}")
-        result = SMELL_FEEDBACK[self.previous_smell, smell]
-        # print(f"Result {result}")
-        self.previous_smell = smell
-        return result
-
 
 class PyGameKeyboardController(object):
     '''
@@ -700,8 +684,27 @@ if __name__ == '__main__':
     # display the view initially
     if GAME_SHOW_SCREEN and view.show_view:
         view.draw()
-        view.screen.blit(view.surface, (0,0))
+        view.screen.blit(view.surface, (0, 0))
         pygame.display.update()
+
+    # Initialize the agent
+    interactions = [
+        Interaction(FORWARD, STABLE, -10),
+        Interaction(FORWARD, BUMP, -10),
+        Interaction(FORWARD, INCREASE, 10),
+        Interaction(FORWARD, DECREASE, -10),
+        Interaction(FORWARD, EAT, 10),
+        Interaction(TURN_LEFT, STABLE, -5),
+        Interaction(TURN_LEFT, INCREASE, 5),
+        Interaction(TURN_LEFT, DECREASE, -10),
+        Interaction(TURN_LEFT, EAT, 10),
+        Interaction(TURN_RIGHT, STABLE, -5),
+        Interaction(TURN_RIGHT, INCREASE, 5),
+        Interaction(TURN_RIGHT, DECREASE, -10),
+        Interaction(TURN_RIGHT, EAT, 10),
+    ]
+
+    model.imosc = Agent(interactions)
 
     while running:
 
