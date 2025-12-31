@@ -13,8 +13,8 @@ from imosc import Interaction, Agent
 
 # Actions
 FORWARD = 0
-TURN_LEFT = 2
 TURN_RIGHT = 1
+TURN_LEFT = 2
 # Outcomes
 DECREASE = 0
 STABLE = 1
@@ -91,7 +91,7 @@ class PyGameView(object):
                 self.model.changes_in_rep[(key[0], key[1])] = self.model.wall
             if isinstance(sprite, FeelEmptySprite):
                 self.model.changes_in_rep[(key[0], key[1])] = self.model.floor
-                smell_color = mcolors.to_hex(self.model.smell_color_map(self.model.smell_grid[key[0]][key[1]] / MAX_SMELL))
+                smell_color = mcolors.to_hex(self.model.smell_color_map(self.model.smell_grid[key[0]][key[1]] / self.model.max_smell))
                 self.model.changes_in_rep[(key[0], key[1])].set_smell(smell_color)
             if isinstance(sprite, Wall) or isinstance(sprite, Floor):
                 self.model.changes_in_rep[(key[0], key[1])] = None
@@ -101,7 +101,7 @@ class PyGameView(object):
         for x in range(w):
             for y in range(h):
                 if self.model.change_in_game_map[x][y]:
-                    smell_color = mcolors.to_hex(self.model.smell_color_map(self.model.smell_grid[x][y]/MAX_SMELL))
+                    smell_color = mcolors.to_hex(self.model.smell_color_map(self.model.smell_grid[x][y]/self.model.max_smell))
                     self.model.game_map[x][y].set_smell(smell_color)
                     if isinstance(self.model.game_map[x][y], Character):
                         self.model.game_map[x][y].draw_representation_image(self, x, y, 90 * self.model.direction)
@@ -148,6 +148,7 @@ class Model(object):
         self.smell_grid = np.full(self.display_grid.shape, MAX_SMELL)
         self.smell_graph = None
         self.smell_color_map = mcolors.LinearSegmentedColormap.from_list("custom_gradient", ["#00ff00", "white"])
+        self.max_smell = MAX_SMELL
 
         # maze game setup
         self.make_singletons()
@@ -197,7 +198,7 @@ class Model(object):
             player_action = ai.capture_current_environment(self.screen_input, self.aux_input)
             
             '''
-            player_action = self.imosc.action(self.outcome)
+            player_action = ['forward', 'turn_right', 'turn_left'][self.imosc.action(self.outcome)]
 
         pprint('ACTION:\t%s' % player_action, new_line_start=True, draw_line=False)
 
@@ -308,6 +309,7 @@ class Model(object):
             elif isinstance(new_tile, Battery):
                 self.move_character(new_tile, character_new_pos, self.character)
                 self.collect_battery(character_new_pos)
+                self.set_smell_grid()
                 outcome = EAT
 
             elif isinstance(new_tile, RightArrow):
@@ -470,9 +472,18 @@ class Model(object):
                     if 0 <= nr < self.display_grid.shape[0] and 0 <= nc < self.display_grid.shape[1] and \
                             self.display_grid[nr, nc] != WALL:
                         self.smell_graph.add_edge((r, c), (nr, nc), weight=1)
+        self.set_smell_grid()
+
+        self.batteries_collected = 0
+        self.extinguishers_collected = 0
+        self.keys_collected = 0
+        self.maze_reset = False
+
+    def set_smell_grid(self):
+        """Set the smell grid. Called when the maze is loaded or when a target is eaten"""
         # --- Identify target cells ---
         targets = [(r, c) for r in range(self.display_grid.shape[0]) for c in range(self.display_grid.shape[1])
-                   if self.display_grid[r, c] == BATTERY]
+                   if self.game_map[r][c].id == BATTERY]
         # --- Compute shortest distances from each cell to the nearest target ---
         self.smell_grid[:, :] = MAX_SMELL
         for target in targets:
@@ -480,11 +491,10 @@ class Model(object):
             for (r, c), dist in lengths.items():
                 self.smell_grid[r, c] = min(self.smell_grid[r, c], dist)
         print(self.smell_grid)
-
-        self.batteries_collected = 0
-        self.extinguishers_collected = 0
-        self.keys_collected = 0
-        self.maze_reset = False
+        if len(targets) > 0:
+            self.max_smell = self.smell_grid[self.smell_grid != MAX_SMELL].max()
+        # Redraw entire map to show updated smell values
+        self.change_in_game_map[:, :] = True
 
     # these are helper functions for making maze levels
     def floor_init(self):
@@ -668,6 +678,9 @@ if __name__ == '__main__':
 
     # pygame setup
     ai_controlled = False
+    if sys.argv.__len__() > 1:
+        if sys.argv[1] == 'ai':
+            ai_controlled = True
     pygame.init()
     pygame.display.set_caption('Ai '+str(id(pygame)))
     print(f'\33]0;{id(pygame)}\a', end='', flush=True)
