@@ -9,7 +9,7 @@ import datetime
 import numpy as np
 from game_objects_color import BumpSprite, FeelEmptySprite, FeelWallSprite
 import networkx as nx
-from imosc import Interaction, Agent
+from imosm import Interaction, Agent
 
 # Actions
 FORWARD = 0
@@ -142,10 +142,10 @@ class Model(object):
         self.outcome = STABLE
         self.changes_in_rep = {}
 
-        self.display_grid = np.zeros((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), dtype=int)
+        self.env_grid = np.zeros((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), dtype=int)
         self.character_current_floor = None
         self.change_in_game_map = np.full((GAME_MAP_GRID[0], GAME_MAP_GRID[1]), False, dtype=bool)
-        self.smell_grid = np.full(self.display_grid.shape, MAX_SMELL)
+        self.smell_grid = np.full(self.env_grid.shape, MAX_SMELL)
         self.smell_graph = None
         self.smell_color_map = mcolors.LinearSegmentedColormap.from_list("custom_gradient", ["#00ff00", "white"])
         self.max_smell = MAX_SMELL
@@ -167,7 +167,7 @@ class Model(object):
         self.time_counter = 0
 
         # IMOSC setup
-        self.imosc = None
+        self.imosm = None
 
     # This function updates the model
     def update(self):
@@ -198,7 +198,7 @@ class Model(object):
             player_action = ai.capture_current_environment(self.screen_input, self.aux_input)
             
             '''
-            player_action = ['forward', 'turn_right', 'turn_left'][self.imosc.action(self.outcome)]
+            player_action = ['forward', 'turn_right', 'turn_left'][self.imosm.action(self.outcome)]
 
         pprint('ACTION:\t%s' % player_action, new_line_start=True, draw_line=False)
 
@@ -283,10 +283,10 @@ class Model(object):
 
             # Display the feel interaction in the representation
             if not np.array_equal(feel_pos, self.character_current_pos):
-                if self.display_grid[tuple(feel_pos)] == 2:
+                if self.env_grid[tuple(feel_pos)] == 2:  # WALL
                     self.changes_in_rep[tuple(feel_pos)] = self.feel_wall_sprite
                     feel_smell = self.smell_grid[tuple(feel_pos)]
-                    outcome = STABLE + (feel_smell < position_smell) - (feel_smell > position_smell)
+                    # outcome = STABLE + (feel_smell < position_smell) - (feel_smell > position_smell)
                     return BUMP  # Don't smell
                 else:
                     self.changes_in_rep[tuple(feel_pos)] = self.feel_empty_sprite
@@ -412,7 +412,7 @@ class Model(object):
                     self.num_batteries = row[2]
                 else:
                     # Initialize the grid
-                    self.display_grid[row[0]][row[1]] = row[2]
+                    self.env_grid[row[0]][row[1]] = row[2]
                     if row[2] == 1:
                         game_map[row[0]][row[1]] = self.character
                     if row[2] == 2:
@@ -441,7 +441,7 @@ class Model(object):
     def get_next_maze(self):
 
         # Refresh all tiles to be redrawn
-        self.display_grid[:, :] = 0
+        self.env_grid[:, :] = 0
         self.direction = UP
         self.change_in_game_map[:, :] = True
 
@@ -463,14 +463,14 @@ class Model(object):
 
         # The smell graph
         self.smell_graph = nx.Graph()
-        for r in range(self.display_grid.shape[0]):
-            for c in range(self.display_grid.shape[1]):
-                if self.display_grid[r, c] == WALL:
+        for r in range(self.env_grid.shape[0]):
+            for c in range(self.env_grid.shape[1]):
+                if self.env_grid[r, c] == WALL:
                     continue  # skip walls
                 for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
                     nr, nc = r + dr, c + dc
-                    if 0 <= nr < self.display_grid.shape[0] and 0 <= nc < self.display_grid.shape[1] and \
-                            self.display_grid[nr, nc] != WALL:
+                    if 0 <= nr < self.env_grid.shape[0] and 0 <= nc < self.env_grid.shape[1] and \
+                            self.env_grid[nr, nc] != WALL:
                         self.smell_graph.add_edge((r, c), (nr, nc), weight=1)
         self.set_smell_grid()
 
@@ -482,7 +482,7 @@ class Model(object):
     def set_smell_grid(self):
         """Set the smell grid. Called when the maze is loaded or when a target is eaten"""
         # --- Identify target cells ---
-        targets = [(r, c) for r in range(self.display_grid.shape[0]) for c in range(self.display_grid.shape[1])
+        targets = [(r, c) for r in range(self.env_grid.shape[0]) for c in range(self.env_grid.shape[1])
                    if self.game_map[r][c].id == BATTERY]
         # --- Compute shortest distances from each cell to the nearest target ---
         self.smell_grid[:, :] = MAX_SMELL
@@ -717,7 +717,7 @@ if __name__ == '__main__':
         Interaction(TURN_RIGHT, EAT, 10),
     ]
 
-    model.imosc = Agent(interactions)
+    model.imosm = Agent(interactions)
 
     while running:
 
