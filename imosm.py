@@ -190,7 +190,7 @@ class Agent:
     def __init__(self, _interactions):
         """ Initialize our agent """
         self._interactions = {interaction.key(): interaction for interaction in _interactions}
-        self._primitive_intended_interaction = self._interactions["00"]
+        self._primitive_intended_interaction = self._interactions["01"]  # See how to avoid this default
         self._intended_interaction = None
 
         # The context
