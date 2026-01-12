@@ -2,7 +2,7 @@
 
 Execute `puzzle_game_interactional_motivation.py` to test the environment.
 
-![Agent11](movie.gif)
+![01_airis_teleop.gif](01_airis_teleop.gif)
 
 Use the following keys to control the agent (chosen for the numpad layout):
 
@@ -27,4 +27,4 @@ Observe the outcome of actions in the console output:
 | 5    | Smell decrease             |
 | 6    | Target reached and eaten   |
 
-See the tutorial [IM_Tutorial.ipynb](IM_Tutorial.ipynb)
+See the tutorial [IM_Tutorial_01.ipynb](IM_Tutorial_01.ipynb)

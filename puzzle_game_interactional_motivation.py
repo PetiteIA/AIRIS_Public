@@ -16,8 +16,8 @@ from imosm import Interaction, Agent
 # TURN_RIGHT = 1
 # TURN_LEFT = 2
 # ACTIONS_IMOSM_AIRIS = ['forward', 'turn_right', 'turn_left']
-FEEL_FRONT = 1
 FORWARD = 0
+FEEL_FRONT = 1
 FEEL_LEFT = 2
 FEEL_RIGHT = 3
 TURN_LEFT = 4
