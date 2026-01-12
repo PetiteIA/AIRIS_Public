@@ -4,7 +4,7 @@ TRACE = True
 # Maximum length of intended sequence
 MAX_LENGTH = 5
 # Minimum weight of intended sequence
-MIN_WEIGHT = 3
+MIN_WEIGHT = 1
 
 
 class Interaction:

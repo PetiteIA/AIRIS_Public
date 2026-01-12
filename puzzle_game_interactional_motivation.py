@@ -12,9 +12,19 @@ import networkx as nx
 from imosm import Interaction, Agent
 
 # Actions
-FORWARD = 0
-TURN_RIGHT = 1
-TURN_LEFT = 2
+# FORWARD = 0
+# TURN_RIGHT = 1
+# TURN_LEFT = 2
+# ACTIONS_IMOSM_AIRIS = ['forward', 'turn_right', 'turn_left']
+FEEL_FRONT = 0
+FORWARD = 1
+FEEL_LEFT = 2
+FEEL_RIGHT = 3
+TURN_LEFT = 4
+TURN_RIGHT = 5
+
+ACTIONS_IMOSM_AIRIS = ['feel_front', 'forward', 'feel_left', 'feel_right', 'turn_right', 'turn_left']
+
 # Outcomes
 DECREASE = 0
 STABLE = 1
@@ -198,7 +208,7 @@ class Model(object):
             player_action = ai.capture_current_environment(self.screen_input, self.aux_input)
             
             '''
-            player_action = ['forward', 'turn_right', 'turn_left'][self.imosm.action(self.outcome)]
+            player_action = ACTIONS_IMOSM_AIRIS[self.imosm.action(self.outcome)]
 
         pprint('ACTION:\t%s' % player_action, new_line_start=True, draw_line=False)
 
@@ -218,7 +228,7 @@ class Model(object):
         self.current_environment()
 
         # Save the screenshot
-        pygame.image.save(view.screen, f"logs/{self.time_counter:03}.png")
+        pygame.image.save(view.screen, f"logs/{self.time_counter:04}.png")
 
         '''
         Send the new self.screen_input and self.aux_input to your ai so that it can see what changed.
@@ -266,7 +276,11 @@ class Model(object):
                 character_new_pos += np.array([1, 0])
             if player_input == 'forward':
                 character_new_pos += DIRECTIONS[self.direction]
-                new_front_smell = self.smell_grid[tuple(character_new_pos + DIRECTIONS[self.direction])]
+                new_front_pos = character_new_pos + DIRECTIONS[self.direction]
+                if new_front_pos[0] < 0 or new_front_pos[0] >= GAME_MAP_GRID[0] or new_front_pos[1] < 0 or new_front_pos[1] >= GAME_MAP_GRID[1]:
+                    new_front_smell = 0
+                else:
+                    new_front_smell = self.smell_grid[tuple(character_new_pos + DIRECTIONS[self.direction])]
                 outcome = STABLE + (new_front_smell < front_smell) - (new_front_smell > front_smell)
             if player_input == "turn_left":
                 outcome = STABLE + (left_smell < front_smell) - (left_smell > front_smell)
@@ -716,7 +730,36 @@ if __name__ == '__main__':
         Interaction(TURN_RIGHT, DECREASE, -10),
         Interaction(TURN_RIGHT, EAT, 10),
     ]
+    interactions = [
+        Interaction(FORWARD, STABLE, 5),
+        Interaction(FORWARD, BUMP, -10),
+        Interaction(TURN_LEFT, STABLE, -3),
+        Interaction(TURN_LEFT, BUMP, -3),
+        Interaction(TURN_RIGHT, STABLE, -3),
+        Interaction(TURN_RIGHT, BUMP, -3),
+        Interaction(FEEL_FRONT, STABLE, -1),
+        Interaction(FEEL_FRONT, BUMP, -1),
+        Interaction(FEEL_LEFT, STABLE, -1),
+        Interaction(FEEL_LEFT, BUMP, -1),
+        Interaction(FEEL_RIGHT, STABLE, -1),
+        Interaction(FEEL_RIGHT, BUMP, -1),
 
+        Interaction(FEEL_FRONT, DECREASE, -1),
+        Interaction(FEEL_FRONT, INCREASE, -1),
+        Interaction(FEEL_LEFT, DECREASE, -1),
+        Interaction(FEEL_LEFT, INCREASE, -1),
+        Interaction(FEEL_RIGHT, DECREASE, -1),
+        Interaction(FEEL_RIGHT, INCREASE, -1),
+        Interaction(FORWARD, INCREASE, 10),
+        Interaction(FORWARD, DECREASE, -1),
+        Interaction(FORWARD, EAT, 5),
+        Interaction(TURN_LEFT, INCREASE, -1),
+        Interaction(TURN_LEFT, DECREASE, -5),
+        Interaction(TURN_LEFT, EAT, 1),
+        Interaction(TURN_RIGHT, INCREASE, -1),
+        Interaction(TURN_RIGHT, DECREASE, -5),
+        Interaction(TURN_RIGHT, EAT, 1),
+    ]
     model.imosm = Agent(interactions)
 
     while running:
