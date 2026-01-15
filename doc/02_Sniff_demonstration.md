@@ -56,7 +56,8 @@ It has no knowledge that it exists a two-dimensional grid with walls and a targe
 
 In short, the agent does not know what it is doing, but it knows whether it likes it or not!
 
-It will learn to prefer actions that lead to positive valence interactions, such as moving forward when the smell increases or reaching and eating the target. 
+It will learn to prefer behaviors that lead to positive valence interactions, such as moving forward when the smell increases or reaching and eating the target. 
+It learns nonetheless to use negative-valence "epistemic interactions" such as sniffing around to gather information about its environment.
 Actions that lead to negative valence interactions, such as bumping into walls or turning towards less smell, will be avoided over time.
 
 ## The demonstrations
