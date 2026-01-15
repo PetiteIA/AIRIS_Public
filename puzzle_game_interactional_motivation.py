@@ -52,8 +52,10 @@ class PyGameView(object):
         self.screen = pygame.display.set_mode(GAME_SCREEN_SIZE)  # a pygame screen
         self.surface = pygame.Surface(GAME_SCREEN_SIZE)  # a pygame surface is the thing you draw on
 
-        self.show_view = True # toggle display
-        self.show_controls = False # toggle control display
+        self.show_view = True  # toggle display
+        self.show_controls = False  # toggle control display
+
+        self.counter_font = pygame.font.SysFont("courier", 20, bold=True)
 
     def draw(self):
 
@@ -70,6 +72,13 @@ class PyGameView(object):
             for n, line in enumerate(PUZZLE_GAME_CONTROL_KEY):
                 self.draw_text(line, PUZZLE_GAME_CONTROL_KEY_START[0],
                                PUZZLE_GAME_CONTROL_KEY_START[1]+14*n, 20)
+
+        # Draw counter
+        counter_surface = self.counter_font.render(f'{model.time_counter:04}', True, (255, 255, 255))
+        counter_rectangle = counter_surface.get_rect(topleft=(920, 4))
+        self.surface.fill((0, 0, 0), counter_rectangle)
+        self.surface.blit(counter_surface, counter_rectangle)
+
         # update display
         pygame.display.update()
 
@@ -121,8 +130,7 @@ class PyGameView(object):
 
     def draw_text(self, text, x, y, size, color=(100, 100, 100)):
         basicfont = pygame.font.SysFont(None, size)
-        text_render = basicfont.render(
-            text, True, color)
+        text_render = basicfont.render(text, True, color)
         self.surface.blit(text_render, (x, y))
 
 
