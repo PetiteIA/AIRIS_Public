@@ -1,7 +1,7 @@
 # Demonstrate interactional motivation with the Sniff Experiment
 
 Execute `puzzle_game_interactional_motivation.py ai` to run the experiment.
-the `ai` argument makes the agent controlled by the Interactional Motivation Schema Mechanism.
+The `ai` argument makes the agent controlled by the Interactional Motivation Schema Mechanism.
 
 ## Define the agent's possibilities of interaction 
 
@@ -52,17 +52,17 @@ The valences of interactions are defined as follows:
 | sniff right  | increase  | -1      | The smell is stronger on the right.  |
 
 The agent initially ingnores the meaning of actions and outcomes. 
-It has no knowledge that it exists a two-dimensional grid with walls and a target emitting smell.
+It has no knowledge that it exists in a two-dimensional grid with walls and a target emitting smell.
 
 In short, the agent does not know what it is doing, but it knows whether it likes it or not!
 
-It will learn to prefer behaviors that lead to positive valence interactions, such as moving forward when the smell increases or reaching and eating the target. 
+It will learn to prefer behaviors that lead to positive-valence interactions, such as moving forward when the smell increases or reaching and eating the target. 
 It learns nonetheless to use negative-valence "epistemic interactions" such as sniffing around to gather information about its environment.
-Actions that lead to negative valence interactions, such as bumping into walls or turning towards less smell, will be avoided over time.
+Actions that lead to negative-valence interactions, such as bumping into walls or turning towards less smell, will be avoided over time.
 
 ## The demonstrations
 
-Since the smell does not pass through walls, will eventually reach the target by ascending the smell gradient (représented by the gradiant of green in the right-hand screen).
+Since the smell does not pass through walls, will eventually reach the target by ascending the smell gradient (represented by the gradiant of green in the right-hand screen).
 
 ### Beginning the development in the maze
 
@@ -76,7 +76,7 @@ When it is put in the open grid, it keeps the habit of sniffing in front to avoi
 
 ### Beginning the development in an open grid
 
-This run was obtained with the commit [33f6fd2](https://github.com/PetiteIA/AIRIS_Public/commit/33f6fd244587dba6b26926d8bec7e87fe7d75353): same agent, différent sequencing of levels.
+This run was obtained with the commit [33f6fd2](https://github.com/PetiteIA/AIRIS_Public/commit/33f6fd244587dba6b26926d8bec7e87fe7d75353): same agent, different ordering of game levels.
 
 
 ![Learning in an open grid](02_open_run_big_grid.gif)
@@ -86,7 +86,7 @@ Because the agent begins its development in a relatively open world, it quickly 
 When the agent it put in the maze it suffer learning new behaviors to avoid bumping into walls.
 
 
-### Conclusion
+## Conclusion
 
 
 What interests us in this experiment is not particularly that the agent manages to reach the target. 

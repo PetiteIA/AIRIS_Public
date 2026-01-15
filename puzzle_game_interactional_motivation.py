@@ -76,7 +76,7 @@ class PyGameView(object):
         # Draw counter
         counter_surface = self.counter_font.render(f'{model.time_counter:04}', True, (255, 255, 255))
         counter_rectangle = counter_surface.get_rect(topleft=(920, 4))
-        self.surface.fill((0, 0, 0), counter_rectangle)
+        self.surface.fill((64, 64, 64), counter_rectangle)
         self.surface.blit(counter_surface, counter_rectangle)
 
         # update display
