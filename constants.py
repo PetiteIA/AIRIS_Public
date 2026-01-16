@@ -67,3 +67,6 @@ BATTERY = 3
 DOOR = 4
 
 MAX_SMELL = 100
+
+TRACE_HEADERS = ["step", "action", "prediction", "outcome", "correct", "valence"]
+TRACE_FILE = 'logs/00_trace.csv'

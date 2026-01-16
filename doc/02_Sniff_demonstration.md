@@ -32,18 +32,18 @@ The valences of interactions are defined as follows:
 | move forward | stable    |  10     | There was no smell or it remained stable. |
 | move forward | wall      | -10     | The agent bumped into a wall.             |
 | turn left    | stable    | -3      | Turned toward same smell.             |
-| turn left    | decrease  | -3      | Turned toward less smell  |
+| turn left    | decrease  | -3      | Turned toward weaker smell or wall |
 | turn right   | stable    | -3      | Turned toward same smell.             |
-| turn right   | decrease  | -3      | Turned toward less smell  |
+| turn right   | decrease  | -3      | Turned toward weaker smell or wall |
 | sniff front  | stable    | -1      | Sniff no smell or same in front
 | sniff front  | wall      | -1      | Sniffed a wall in front | 
 | sniff left   | stable    | -1      | Sniff no smell or same on the left |
 | sniff left   | wall      | -1      | Sniffed a wall on the left |
 | sniff right  | stable    | -1      | Sniff no smell or same on the right |
 | sniff right  | wall      | -3      | Sniffed a wall on the right |
-| move forward | decrease  | -1      |  The smell decreased.  |
-| move forward | increase  |  10     | The smell increased.  |
-| move forward | eat       |  10     |  The agent reached and ate the target.  |
+| move forward | decrease  | -1      | The smell decreased as the agent moved forward.  |
+| move forward | increase  |  10     | The smell increased as the agent moved forward.  |
+| move forward | eat       |  10     | The agent reached and ate the target.  |
 | sniff front  | decrease  | -1      | The smell is weaker in front.  |
 | sniff front  | increase  | -1      | The smell is stronger in front.  |
 | sniff left   | decrease  | -1      | The smell is weaker on the left.  |

@@ -9,7 +9,9 @@ import datetime
 import numpy as np
 from game_objects_color import BumpSprite, FeelEmptySprite, FeelWallSprite
 import networkx as nx
+import structlog
 from imosm import Interaction, Agent
+import tracer
 
 # Actions
 # FORWARD = 0
@@ -75,7 +77,7 @@ class PyGameView(object):
 
         # Draw counter
         counter_surface = self.counter_font.render(f'{model.time_counter:04}', True, (255, 255, 255))
-        counter_rectangle = counter_surface.get_rect(topleft=(920, 4))
+        counter_rectangle = counter_surface.get_rect(topleft=(920, 6))
         self.surface.fill((64, 64, 64), counter_rectangle)
         self.surface.blit(counter_surface, counter_rectangle)
 
@@ -187,6 +189,8 @@ class Model(object):
 
         # IMOSC setup
         self.imosm = None
+        # The tracer
+        self.tracer = structlog.get_logger()
 
     # This function updates the model
     def update(self):
@@ -238,6 +242,11 @@ class Model(object):
 
         # Save the screenshot
         pygame.image.save(view.screen, f"logs/{self.time_counter:04}.png")
+
+        trace_dict = {"step": self.time_counter}
+        self.tracer = self.tracer.bind(**trace_dict)
+        self.tracer.info("", **self.imosm.get_trace_dict())
+        self.tracer = self.tracer.new()
 
         '''
         Send the new self.screen_input and self.aux_input to your ai so that it can see what changed.
