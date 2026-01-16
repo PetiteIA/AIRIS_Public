@@ -13,11 +13,6 @@ import structlog
 from imosm import Interaction, Agent
 import tracer
 
-# Actions
-# FORWARD = 0
-# TURN_RIGHT = 1
-# TURN_LEFT = 2
-# ACTIONS_IMOSM_AIRIS = ['forward', 'turn_right', 'turn_left']
 FORWARD = 0
 FEEL_FRONT = 1
 FEEL_LEFT = 2
@@ -25,8 +20,7 @@ FEEL_RIGHT = 3
 TURN_LEFT = 4
 TURN_RIGHT = 5
 
-# ACTIONS_IMOSM_AIRIS = ['feel_front', 'forward', 'feel_left', 'feel_right', 'turn_right', 'turn_left']
-ACTIONS_IMOSM_AIRIS = ['forward', 'feel_front', 'feel_left', 'feel_right', 'turn_right', 'turn_left']
+ACTIONS_IMOSM_AIRIS = ['forward', 'sniff_front', 'sniff_left', 'sniff_right', 'turn_right', 'turn_left']
 
 # Outcomes
 DECREASE = 0
@@ -191,21 +185,28 @@ class Model(object):
         self.imosm = None
         # The tracer
         self.tracer = structlog.get_logger()
+        self.player_action = ''
 
     # This function updates the model
     def update(self):
 
         pprint('-------------------------------------------- TIME STEP %d --------------------------------------------'
             % self.time_counter, new_line_start=True, draw_line=False)
+
+        # Save the screenshot before incrementing time counter
+        pygame.image.save(view.screen, f"logs/{self.time_counter:04}.png")
+        # Save the trace of the previous interaction
+        trace_dict = {"step": self.time_counter, "action": self.player_action}
+
         self.time_counter += 1
 
         self.change_in_game_map[:, :] = False
 
-        player_action = 'nothing'
+        self.player_action = 'nothing'
 
         # get user input
         if not self.ai_controlled:
-            player_action = self.get_action()
+            self.player_action = self.get_action()
 
         # set environment values to current and output to ai
         self.current_environment()
@@ -221,13 +222,13 @@ class Model(object):
             player_action = ai.capture_current_environment(self.screen_input, self.aux_input)
             
             '''
-            player_action = ACTIONS_IMOSM_AIRIS[self.imosm.action(self.outcome)]
+            self.player_action = ACTIONS_IMOSM_AIRIS[self.imosm.action(self.outcome)]
 
-        pprint('ACTION:\t%s' % player_action, new_line_start=True, draw_line=False)
+        pprint('ACTION:\t%s' % self.player_action, new_line_start=True, draw_line=False)
 
         # update the game according to the player's input
-        self.outcome = self.game_logic(player_action)
-        print(f"OUTCOME:\t{self.outcome}")
+        self.outcome = self.game_logic(self.player_action)
+        # print(f"OUTCOME:\t{self.outcome}")
 
         # go to next level if player beats the current level
         if self.batteries_collected == self.num_batteries:
@@ -240,12 +241,9 @@ class Model(object):
         # output post-action environment to ai
         self.current_environment()
 
-        # Save the screenshot
-        pygame.image.save(view.screen, f"logs/{self.time_counter:04}.png")
-
-        trace_dict = {"step": self.time_counter}
+        # Log the trace of this interaction
         self.tracer = self.tracer.bind(**trace_dict)
-        self.tracer.info("", **self.imosm.get_trace_dict())
+        self.tracer.info("", **self.imosm.trace_dict)
         self.tracer = self.tracer.new()
 
         '''
@@ -306,11 +304,11 @@ class Model(object):
             if player_input == "turn_right":
                 outcome = STABLE + (right_smell < front_smell) - (right_smell > front_smell)
                 self.direction = (self.direction + 3) % 4
-            if player_input == 'feel_left':
+            if player_input == 'sniff_left':
                 feel_pos += DIRECTIONS[(self.direction + 1) % 4]
-            if player_input == 'feel_front':
+            if player_input == 'sniff_front':
                 feel_pos += DIRECTIONS[self.direction]
-            if player_input == 'feel_right':
+            if player_input == 'sniff_right':
                 feel_pos += DIRECTIONS[(self.direction - 1) % 4]
 
             # Display the feel interaction in the representation
@@ -684,15 +682,15 @@ class PyGameKeyboardController(object):
             number_of_keys_pressed += 1
         if keys[pygame.K_KP1]:
             is_there_input = True
-            self.player_input = 'feel_left'
+            self.player_input = 'sniff_left'
             number_of_keys_pressed += 1
         if keys[pygame.K_KP2]:
             is_there_input = True
-            self.player_input = 'feel_front'
+            self.player_input = 'sniff_front'
             number_of_keys_pressed += 1
         if keys[pygame.K_KP3]:
             is_there_input = True
-            self.player_input = 'feel_right'
+            self.player_input = 'sniff_right'
             number_of_keys_pressed += 1
 
         if number_of_keys_pressed > 0:
@@ -802,7 +800,7 @@ if __name__ == '__main__':
             # display the view
             if GAME_SHOW_SCREEN and view.show_view:
                 view.draw()
-                view.screen.blit(view.surface, (0,0))
+                view.screen.blit(view.surface, (0, 0))
                 pygame.display.update()
 
             # reset user input

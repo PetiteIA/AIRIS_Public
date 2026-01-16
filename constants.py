@@ -68,5 +68,5 @@ DOOR = 4
 
 MAX_SMELL = 100
 
-TRACE_HEADERS = ["step", "action", "prediction", "outcome", "correct", "valence"]
+TRACE_HEADERS = ["step", "action", "code", "prediction", "outcome", "correct", "valence"]
 TRACE_FILE = 'logs/00_trace.csv'

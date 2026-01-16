@@ -192,7 +192,6 @@ class Agent:
         self._interactions = {interaction.key(): interaction for interaction in _interactions}
         self._primitive_intended_interaction = self._interactions["01"]  # See how to avoid this default
         self._intended_interaction = None
-        self._primitive_enacted_interaction = None
 
         # The context
         self._penultimate_interaction = None
@@ -216,25 +215,25 @@ class Agent:
         self.proposed_df = None
         self.decision_df = None
         self.clear = True  # Used to clear the display after the enacted interaction
+        self.trace_dict = {}
 
     def action(self, _outcome):
         """Implement the agent's policy"""
         # Trace the previous cycle
-        self._primitive_enacted_interaction = self._interactions[
+        primitive_enacted_interaction = self._interactions[
             f"{self._primitive_intended_interaction.get_action()}{_outcome}"]
-        if TRACE:
-            print(
-                f"Action: {self._primitive_intended_interaction.get_action()}, "
-                f"Prediction: {self._primitive_intended_interaction.get_outcome()}, "
-                f"Outcome: {_outcome}, "
-                f"Prediction_correct: {self._primitive_intended_interaction.get_outcome() == _outcome}, "
-                f"Valence: {self._primitive_enacted_interaction.get_valence()}")
-
+        self.trace_dict = {
+                "code": self._primitive_intended_interaction.get_action(),
+                "prediction": self._primitive_intended_interaction.get_outcome(),
+                "outcome": _outcome,
+                "correct": self._primitive_intended_interaction.get_outcome() == _outcome,
+                "valence": primitive_enacted_interaction.get_valence()
+        }
         # Follow up the enaction
         if self._intended_interaction is None:  # First interaction cycle
-            enacted_interaction = self._primitive_enacted_interaction
+            enacted_interaction = primitive_enacted_interaction
         else:
-            enacted_interaction = self._intended_interaction.increment(self._primitive_enacted_interaction,
+            enacted_interaction = self._intended_interaction.increment(primitive_enacted_interaction,
                                                                        self._interactions)
 
         # If the intended interaction is over (completely enacted or aborted)
@@ -352,16 +351,3 @@ class Agent:
         if TRACE:
             print("Intention:", intended_interaction_key)
         self._intended_interaction = self._interactions[intended_interaction_key]
-
-    def get_trace_dict(self):
-        """Return a dictionary of trace information"""
-        trace_dict = {
-            "action": self._primitive_intended_interaction.get_action(),
-            "prediction": self._primitive_intended_interaction.get_outcome(),
-            "outcome": self._primitive_enacted_interaction.get_outcome(),
-            "correct": self._primitive_intended_interaction.get_outcome() ==
-                                  self._primitive_enacted_interaction.get_outcome(),
-            "valence": self._primitive_enacted_interaction.get_valence()
-        }
-        return trace_dict
-
