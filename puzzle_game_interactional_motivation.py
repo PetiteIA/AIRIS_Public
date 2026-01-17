@@ -243,7 +243,7 @@ class Model(object):
 
         # Log the trace of this interaction
         self.tracer = self.tracer.bind(**trace_dict)
-        self.tracer.info("", **self.imosm.trace_dict)
+        self.tracer.info("", **self.imosm.trace_record)
         self.tracer = self.tracer.new()
 
         '''

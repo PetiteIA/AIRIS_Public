@@ -214,20 +214,24 @@ class Agent:
         self._default_df = pd.DataFrame(data)
         self.proposed_df = None
         self.decision_df = None
-        self.clear = True  # Used to clear the display after the enacted interaction
-        self.trace_dict = {}
+        self.trace_record = {}
+        self.enacted_length = 0
 
     def action(self, _outcome):
         """Implement the agent's policy"""
         # Trace the previous cycle
         primitive_enacted_interaction = self._interactions[
             f"{self._primitive_intended_interaction.get_action()}{_outcome}"]
-        self.trace_dict = {
+        enaction_succeeded = primitive_enacted_interaction == self._primitive_intended_interaction
+        self.enacted_length += enaction_succeeded
+        self.trace_record = {
                 "code": self._primitive_intended_interaction.get_action(),
                 "prediction": self._primitive_intended_interaction.get_outcome(),
                 "outcome": _outcome,
-                "correct": self._primitive_intended_interaction.get_outcome() == _outcome,
-                "valence": primitive_enacted_interaction.get_valence()
+                "status": "success" if enaction_succeeded else "fail",
+                "valence": primitive_enacted_interaction.get_valence(),
+                "i_length": self._intended_interaction.get_length() if self._intended_interaction else 1,
+                "e_length": self.enacted_length
         }
         # Follow up the enaction
         if self._intended_interaction is None:  # First interaction cycle
@@ -236,11 +240,8 @@ class Agent:
             enacted_interaction = self._intended_interaction.increment(primitive_enacted_interaction,
                                                                        self._interactions)
 
-        # If the intended interaction is over (completely enacted or aborted)
-        if enacted_interaction is None:
-            self.clear = False
-        else:
-            self.clear = True
+        # If the intended interaction is determined (completely enacted or aborted)
+        if enacted_interaction is not None:
             # Memorize the context
             self._penultimate_composite_interaction = self._previous_composite_interaction
             self._previous_composite_interaction = self._last_composite_interaction
@@ -254,6 +255,10 @@ class Agent:
             self.aggregate_propositions()
             # Decide the next enaction
             self.decide()
+            self.enacted_length = 0
+
+        # Trace
+        self.trace_record["nb_schemas"] = len(self._interactions)
 
         # Return the next primitive action
         self._primitive_intended_interaction = self._intended_interaction.current()
