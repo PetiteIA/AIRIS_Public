@@ -4,7 +4,7 @@ from pygame.locals import QUIT, KEYDOWN
 from game_objects import *
 from constants import GAME_MAP_GRID, GAME_MAP_START, GAME_SHOW_SCREEN, GAME_SCREEN_SIZE, REP_MAP_GRID, BATTERY, WALL, \
     PUZZLE_GAME_CONTROL_KEY, PUZZLE_GAME_CONTROL_KEY_START, MAX_SMELL, FORWARD, SNIFF_LEFT, SNIFF_FRONT, SNIFF_RIGHT, \
-    DECREASE, INCREASE, STABLE
+    DECREASE, INCREASE, STABLE, BUMP, EAT, TURN_LEFT, TURN_RIGHT, ACTIONS_IMOSM_AIRIS
 from other_useful_functions import pprint
 import datetime
 import numpy as np
