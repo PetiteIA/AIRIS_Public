@@ -66,7 +66,7 @@ Since the smell does not pass through walls, will eventually reach the target by
 
 ### Beginning the development in the maze
 
-This run was obtained with the commit [6bcaf25](https://github.com/PetiteIA/AIRIS_Public/commit/6bcaf25b03af0224f68f0bd1c5656db098d7845e).
+This run was obtained with the commit [426572f](https://github.com/PetiteIA/AIRIS_Public/commit/426572f9d930b5309bb7b1555c345132387fa204).
 
 ![img/00_movie.gif](img/00_movie.gif)
 
