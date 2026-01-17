@@ -2,7 +2,7 @@ import pandas as pd
 
 TRACE = True
 # Maximum length of intended sequence
-MAX_LENGTH = 5
+MAX_LENGTH = 10
 # Minimum weight of intended sequence
 MIN_WEIGHT = 1
 

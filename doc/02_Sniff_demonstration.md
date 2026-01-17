@@ -68,22 +68,26 @@ Since the smell does not pass through walls, will eventually reach the target by
 
 This run was obtained with the commit [6bcaf25](https://github.com/PetiteIA/AIRIS_Public/commit/6bcaf25b03af0224f68f0bd1c5656db098d7845e).
 
-![Learning in a maze](01_big_grid_feel_front_open.gif)
+![img/00_movie.gif](img/00_movie.gif)
 
 Because the agent begins in the maze, it learns to sniff around to avoid bumpîng into walls before learning to move toward the target.
 
 When it is put in the open grid, it keeps the habit of sniffing in front to avoid bumping into walls.
+
+![img/00_trace_plot.svg](img/00_trace_plot.svg)
 
 ### Beginning the development in an open grid
 
 This run was obtained with the commit [33f6fd2](https://github.com/PetiteIA/AIRIS_Public/commit/33f6fd244587dba6b26926d8bec7e87fe7d75353): same agent, different ordering of game levels.
 
 
-![Learning in an open grid](02_open_run_big_grid.gif)
+![Learning in an open grid](img/01_movie.gif)
 
 Because the agent begins its development in a relatively open world, it quickly learns to approach and eat the target.
 
 When the agent it put in the maze it suffer learning new behaviors to avoid bumping into walls.
+
+![img/01_trace_plot.svg](img/01_trace_plot.svg)
 
 
 ## Conclusion

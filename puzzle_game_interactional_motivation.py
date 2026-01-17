@@ -3,7 +3,8 @@ import time, sys, csv
 from pygame.locals import QUIT, KEYDOWN
 from game_objects import *
 from constants import GAME_MAP_GRID, GAME_MAP_START, GAME_SHOW_SCREEN, GAME_SCREEN_SIZE, REP_MAP_GRID, BATTERY, WALL, \
-    PUZZLE_GAME_CONTROL_KEY, PUZZLE_GAME_CONTROL_KEY_START, MAX_SMELL
+    PUZZLE_GAME_CONTROL_KEY, PUZZLE_GAME_CONTROL_KEY_START, MAX_SMELL, FORWARD, SNIFF_LEFT, SNIFF_FRONT, SNIFF_RIGHT, \
+    DECREASE, INCREASE, STABLE
 from other_useful_functions import pprint
 import datetime
 import numpy as np
@@ -12,22 +13,6 @@ import networkx as nx
 import structlog
 from imosm import Interaction, Agent
 import tracer
-
-FORWARD = 0
-FEEL_FRONT = 1
-FEEL_LEFT = 2
-FEEL_RIGHT = 3
-TURN_LEFT = 4
-TURN_RIGHT = 5
-
-ACTIONS_IMOSM_AIRIS = ['forward', 'sniff_front', 'sniff_left', 'sniff_right', 'turn_right', 'turn_left']
-
-# Outcomes
-DECREASE = 0
-STABLE = 1
-INCREASE = 2
-BUMP = 3
-EAT = 4
 
 # Directions
 UP = 0
@@ -753,19 +738,19 @@ if __name__ == '__main__':
         Interaction(TURN_LEFT, BUMP, -3),
         Interaction(TURN_RIGHT, STABLE, -3),
         Interaction(TURN_RIGHT, BUMP, -3),
-        Interaction(FEEL_FRONT, STABLE, -1),
-        Interaction(FEEL_FRONT, BUMP, -1),
-        Interaction(FEEL_LEFT, STABLE, -1),
-        Interaction(FEEL_LEFT, BUMP, -1),
-        Interaction(FEEL_RIGHT, STABLE, -1),
-        Interaction(FEEL_RIGHT, BUMP, -1),
+        Interaction(SNIFF_FRONT, STABLE, -1),
+        Interaction(SNIFF_FRONT, BUMP, -1),
+        Interaction(SNIFF_LEFT, STABLE, -1),
+        Interaction(SNIFF_LEFT, BUMP, -1),
+        Interaction(SNIFF_RIGHT, STABLE, -1),
+        Interaction(SNIFF_RIGHT, BUMP, -1),
 
-        Interaction(FEEL_FRONT, DECREASE, -1),
-        Interaction(FEEL_FRONT, INCREASE, -1),
-        Interaction(FEEL_LEFT, DECREASE, -1),
-        Interaction(FEEL_LEFT, INCREASE, -1),
-        Interaction(FEEL_RIGHT, DECREASE, -1),
-        Interaction(FEEL_RIGHT, INCREASE, -1),
+        Interaction(SNIFF_FRONT, DECREASE, -1),
+        Interaction(SNIFF_FRONT, INCREASE, -1),
+        Interaction(SNIFF_LEFT, DECREASE, -1),
+        Interaction(SNIFF_LEFT, INCREASE, -1),
+        Interaction(SNIFF_RIGHT, DECREASE, -1),
+        Interaction(SNIFF_RIGHT, INCREASE, -1),
         Interaction(FORWARD, INCREASE, 10),
         Interaction(FORWARD, DECREASE, -1),
         Interaction(FORWARD, EAT, 5),

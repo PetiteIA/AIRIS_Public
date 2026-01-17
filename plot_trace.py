@@ -1,9 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from constants import FORWARD, EAT, BUMP
 
 # --- Load data ---
-# Replace with your actual file path
 df = pd.read_csv("logs/00_trace.csv")
 
 # --- X axis ---
@@ -46,8 +46,8 @@ ax3.bar(
 )
 
 # --- Add squares for specific conditions on ax3 ---
-# Red square: code == 0 and outcome == 3
-mask_red = (df["code"] == 0) & (df["outcome"] == 3)
+# Red square: MOVE FORWARD and BUMP
+mask_red = (df["code"] == FORWARD) & (df["outcome"] == BUMP)
 ax3.scatter(
     df.loc[mask_red, "step"],
     # df.loc[mask_red, "e_length"],
@@ -59,8 +59,8 @@ ax3.scatter(
     label="Bump"
 )
 
-# Green square: code == 0 and outcome == 4
-mask_green = (df["code"] == 0) & (df["outcome"] == 4)
+# Green square: Move FORWARD and EAT
+mask_green = (df["code"] == FORWARD) & (df["outcome"] == EAT)
 ax3.scatter(
     df.loc[mask_green, "step"],
     np.full(mask_green.sum(), -20),
@@ -83,4 +83,5 @@ plt.tight_layout()
 
 # --- Show figure ---
 plt.savefig("logs/00_trace_plot.svg")
+plt.savefig("logs/00_trace_plot.pdf")
 plt.show()

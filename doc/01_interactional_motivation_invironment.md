@@ -2,7 +2,7 @@
 
 Execute `puzzle_game_interactional_motivation.py` to test the environment.
 
-![01_airis_teleop.gif](01_airis_teleop.gif)
+![01_airis_teleop.gif](img/01_airis_teleop.gif)
 
 Use the following keys to control the agent (chosen for the numpad layout):
 
