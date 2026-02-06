@@ -70,12 +70,13 @@ This run was obtained with the commit [426572f](https://github.com/PetiteIA/AIRI
 
 ![img/00_movie.gif](img/00_movie.gif)
 
-_Video 1: Example run learning the "vigilant behavior"_
+_Video 1: Example run in which the agent learns the "vigilant behavior". The sniffing interactions are materialized on the right side of the display as flashing squares: the agent can sniff in front, left, or right. Smell gradient is represented in green.
+Bumping interactions are indicated by flashing red walls._
 
 Because the agent begins in the maze, it learns to sniff around to avoid bumping into walls before learning to move toward the target.
-We call this habit of sniffing in front to avoid bumping the "vigilant behavior".
+We call "vigilant behavior" this habit of sniffing in front to avoid bumping into walls.
 
-When it is put in the open grid, it keeps the vigilant behavior.
+When it is put in the open grid, the agent keeps the vigilant behavior even though there is less risk of bumping inot walls.
 
 ![img/00_trace_plot.svg](img/00_trace_plot.svg)
 
@@ -89,18 +90,19 @@ This run was obtained with the commit [2467ce5](https://github.com/PetiteIA/AIRI
 
 ![Learning in an open grid](img/01_movie.gif)
 
-_Video 2: Example run learning the "bold behavior"._
+_Video 2: Example run in which the agent learns the "bold behavior"._
 
-Because the agent begins its development in a relatively open world, it quickly learns to approach and eat the target.
-We call this habit the "bold behavior".
-
-When the agent is put in the maze, it has difficulties learning new behaviors to avoid bumping into walls.
-When it is put back in the open grid, it returns to the bold behavior that it learned at the beginning of its development.
+Because the agent begins its development in a relatively open grid, it quickly learns to approach and eat the target.
+We call "bold behavior" this habit of confidently moving forward without sniffing in front, at the risk of bumping into walls.
 
 ![img/01_trace_plot.svg](img/01_trace_plot.svg)
 
 _Figure 2: Trace of the example run shown in Video 2.
 On Steps 519 and 529, the agent successfully completed the re-enaction of an 8-step schema._
+
+When the agent is put in the maze after eating the first target, it eventually learns a version of the vigilant behavior, 
+but when it is put back in the open grid after eating the second target, it returns to the bold behavior that it has learned in the initial phase of its development. 
+
 
 ## Conclusion
 
@@ -109,10 +111,13 @@ What interests us in this experiment is not particularly that the agent manages 
 Of course, it does because it likes the increase of smell.
 
 But what is more interesting is that it learns different kinds of behaviors depending on the training trajectory it undergoes (the "vigilant behavior" or the "bold behavior").
+Moreover, it learns to actively use "epistemic interactions" (sniffing) to avoid negative-valence interactions (bumping into walls) even though these epistemic interactions have a negative valence themselves.
 
-Moreover, it learns to actively use "epistemic interactions" to avoid negative-valence interactions (bumping into walls) even if these epistemic interactions have a negative valence themselves (sniffing around has a small negative valence).
+The agent is deterministic, so it will always generate exactly the same behavior in a given configuration.
+There is, however, a deterministic-chaos effect in the sense that a small change in the initial conditions leads to different behaviors.
+We nonetheless observe the emergence of some version of the vigilant behavior when the agent starts in the maze and some version of the bold behavior when it starts in the open grid.  
 
-Schemas can be seen as small programs that the agent learns and re-executes in the appropriate context.
+Schemas can be considered as small programs that the agent learns and re-executes as a whole in the appropriate context.
 Demonstrating a 10-step self-programming effect (as in Figure 1) constitutes an innovative result in itself. 
 
 ## Tutorial
@@ -121,8 +126,8 @@ See the tutorial [IM_Tutorial_03.ipynb](IM_Tutorial_03.ipynb) for more technical
 
 ## Discussion
 
-Of course, if for any reason, there is a local maximum of smell, the agent will be stuck in it and will never reach the target.
+Of course, if the agent encounters a local maximum of smell, it will be stuck and will never reach the target.
 
-This is when the agent will have to form an explicit goal representation of the target and learn to descend the gradient of smell to get around the local maximum.
+This is when the agent may want to form an explicit goal representation of the target and learn to descend the gradient of smell to get around the local maximum.
 
-This passage from instinctive behaviors to goal-directed behaviors will be our next topic of research.
+This raises the question of the emergence of goals based on innate behavioral preferences, which will be our next topic of research.
