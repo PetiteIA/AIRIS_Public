@@ -76,7 +76,7 @@ Bumping interactions are indicated by flashing red walls._
 Because the agent begins in the maze, it learns to sniff around to avoid bumping into walls before learning to move toward the target.
 We call "vigilant behavior" this habit of sniffing in front to avoid bumping into walls.
 
-When it is put in the open grid, the agent keeps the vigilant behavior even though there is less risk of bumping inot walls.
+When it is put in the open grid after eating the second target, the agent keeps the vigilant behavior even though there is less risk of bumping into walls.
 
 ![img/00_trace_plot.svg](img/00_trace_plot.svg)
 
@@ -126,8 +126,9 @@ See the tutorial [IM_Tutorial_03.ipynb](IM_Tutorial_03.ipynb) for more technical
 
 ## Discussion
 
-Of course, if the agent encounters a local maximum of smell, it will be stuck and will never reach the target.
+Of course, if the agent encounters a local maximum of smell, it will be trapped in the vicinity of that maximum and will never reach the target.
 
-This is when the agent may want to form an explicit goal representation of the target and learn to descend the gradient of smell to get around the local maximum.
+This is when the agent may want to form an explicit goal representation of the target and engage in navigation problem solving to reach it. 
+It may then learn to descend the gradient of smell to bypass the local maximum.
 
 This raises the question of the emergence of goals based on innate behavioral preferences, which will be our next topic of research.
