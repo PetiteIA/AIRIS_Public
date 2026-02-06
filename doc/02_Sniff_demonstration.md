@@ -51,7 +51,7 @@ The valences of interactions are defined as follows:
 | sniff right  | decrease  | -1      | The smell is weaker on the right.  |
 | sniff right  | increase  | -1      | The smell is stronger on the right.  |
 
-The agent initially ingnores the meaning of actions and outcomes. 
+The agent initially ignores the meaning of actions and outcomes. 
 It has no knowledge that it exists in a two-dimensional grid with walls and a target emitting smell.
 
 In short, the agent does not know what it is doing, but it knows whether it likes it or not!
@@ -78,14 +78,14 @@ When it is put in the open grid, it keeps the habit of sniffing in front to avoi
 
 ### Beginning the development in an open grid
 
-This run was obtained with the commit [33f6fd2](https://github.com/PetiteIA/AIRIS_Public/commit/33f6fd244587dba6b26926d8bec7e87fe7d75353): same agent, different ordering of game levels.
+This run was obtained with the commit [2467ce5](https://github.com/PetiteIA/AIRIS_Public/commit/2467ce536e31766f91f595653b0f78956417a512): same agent, different ordering of game levels.
 
 
 ![Learning in an open grid](img/01_movie.gif)
 
 Because the agent begins its development in a relatively open world, it quickly learns to approach and eat the target.
 
-When the agent it put in the maze it suffer learning new behaviors to avoid bumping into walls.
+When the agent is put in the maze it has difficulties learning new behaviors to avoid bumping into walls.
 
 ![img/01_trace_plot.svg](img/01_trace_plot.svg)
 
@@ -94,9 +94,9 @@ When the agent it put in the maze it suffer learning new behaviors to avoid bump
 
 
 What interests us in this experiment is not particularly that the agent manages to reach the target. 
-Of course it does because it likes the increase of smell.
+Of course, it does because it likes the increase of smell.
 
-But what is is more interesting is that it learns different kinds of behaviors depending on the training trajectory it undergoes.
+But what is more interesting is that it learns different kinds of behaviors depending on the training trajectory it undergoes.
 
 Moreover, it learns to actively use "epistemic interactions" to avoid negative valence interactions (bumping into walls) even if these epistemic interactions have a negative valence themselves (sniffing around has a small negative valence).
 
