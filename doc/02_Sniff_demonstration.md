@@ -70,11 +70,17 @@ This run was obtained with the commit [426572f](https://github.com/PetiteIA/AIRI
 
 ![img/00_movie.gif](img/00_movie.gif)
 
-Because the agent begins in the maze, it learns to sniff around to avoid bumping into walls before learning to move toward the target.
+_Video 1: Example run learning the "vigilant behavior"_
 
-When it is put in the open grid, it keeps the habit of sniffing in front to avoid bumping into walls.
+Because the agent begins in the maze, it learns to sniff around to avoid bumping into walls before learning to move toward the target.
+We call this habit of sniffing in front to avoid bumping the "vigilant behavior".
+
+When it is put in the open grid, it keeps the vigilant behavior.
 
 ![img/00_trace_plot.svg](img/00_trace_plot.svg)
+
+_Figure 1: Trace of the example run shown in Video 1. Red squares: bump. Green squares: eat. 
+On step 453, the agent successfully completed the re-enaction of a 10-step schema._
 
 ### Developmental learning starting in the open grid
 
@@ -83,12 +89,18 @@ This run was obtained with the commit [2467ce5](https://github.com/PetiteIA/AIRI
 
 ![Learning in an open grid](img/01_movie.gif)
 
-Because the agent begins its development in a relatively open world, it quickly learns to approach and eat the target.
+_Video 2: Example run learning the "bold behavior"._
 
-When the agent is put in the maze it has difficulties learning new behaviors to avoid bumping into walls.
+Because the agent begins its development in a relatively open world, it quickly learns to approach and eat the target.
+We call this habit the "bold behavior".
+
+When the agent is put in the maze, it has difficulties learning new behaviors to avoid bumping into walls.
+When it is put back in the open grid, it returns to the bold behavior that it learned at the beginning of its development.
 
 ![img/01_trace_plot.svg](img/01_trace_plot.svg)
 
+_Figure 2: Trace of the example run shown in Video 2.
+On Steps 519 and 529, the agent successfully completed the re-enaction of an 8-step schema._
 
 ## Conclusion
 
@@ -96,9 +108,12 @@ When the agent is put in the maze it has difficulties learning new behaviors to 
 What interests us in this experiment is not particularly that the agent manages to reach the target. 
 Of course, it does because it likes the increase of smell.
 
-But what is more interesting is that it learns different kinds of behaviors depending on the training trajectory it undergoes.
+But what is more interesting is that it learns different kinds of behaviors depending on the training trajectory it undergoes (the "vigilant behavior" or the "bold behavior").
 
-Moreover, it learns to actively use "epistemic interactions" to avoid negative valence interactions (bumping into walls) even if these epistemic interactions have a negative valence themselves (sniffing around has a small negative valence).
+Moreover, it learns to actively use "epistemic interactions" to avoid negative-valence interactions (bumping into walls) even if these epistemic interactions have a negative valence themselves (sniffing around has a small negative valence).
+
+Schemas can be seen as small programs that the agent learns and re-executes in the appropriate context.
+Demonstrating a 10-step self-programming effect (as in Figure 1) constitutes an innovative result in itself. 
 
 ## Tutorial
 
