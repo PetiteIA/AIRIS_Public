@@ -62,21 +62,21 @@ Actions that lead to negative-valence interactions, such as bumping into walls o
 
 ## The demonstrations
 
-Since the smell does not pass through walls, will eventually reach the target by ascending the smell gradient (represented by the gradiant of green in the right-hand screen).
+Since the smell does not pass through walls, the agent will eventually reach the target by ascending the smell gradient (represented by the gradiant of green in the right-hand screen).
 
-### Beginning the development in the maze
+### Developmental learning starting in the maze
 
 This run was obtained with the commit [426572f](https://github.com/PetiteIA/AIRIS_Public/commit/426572f9d930b5309bb7b1555c345132387fa204).
 
 ![img/00_movie.gif](img/00_movie.gif)
 
-Because the agent begins in the maze, it learns to sniff around to avoid bumpîng into walls before learning to move toward the target.
+Because the agent begins in the maze, it learns to sniff around to avoid bumping into walls before learning to move toward the target.
 
 When it is put in the open grid, it keeps the habit of sniffing in front to avoid bumping into walls.
 
 ![img/00_trace_plot.svg](img/00_trace_plot.svg)
 
-### Beginning the development in an open grid
+### Developmental learning starting in the open grid
 
 This run was obtained with the commit [2467ce5](https://github.com/PetiteIA/AIRIS_Public/commit/2467ce536e31766f91f595653b0f78956417a512): same agent, different ordering of game levels.
 
@@ -102,4 +102,4 @@ Moreover, it learns to actively use "epistemic interactions" to avoid negative v
 
 ## Tutorial
 
-See the tutorial [IM_Tutorial_03.ipynb](IM_Tutorial_03.ipynb) for more technical explanations and to experience with differente valences of interactions.
+See the tutorial [IM_Tutorial_03.ipynb](IM_Tutorial_03.ipynb) for more technical explanations and to experience with different valences of interactions.
