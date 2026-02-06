@@ -1,7 +1,7 @@
 # Demonstrate interactional motivation with the Sniff Experiment
 
-Execute `puzzle_game_interactional_motivation.py ai` to run the experiment.
-The `ai` argument makes the agent controlled by the Interactional Motivation Schema Mechanism.
+Execute `puzzle_game_interactional_motivation.py imo` to run the experiment.
+The `imo` argument makes the agent controlled by the Interactional Motivation Schema Mechanism.
 
 ## Define the agent's possibilities of interaction 
 
@@ -102,4 +102,12 @@ Moreover, it learns to actively use "epistemic interactions" to avoid negative v
 
 ## Tutorial
 
-See the tutorial [IM_Tutorial_03.ipynb](IM_Tutorial_03.ipynb) for more technical explanations and to experience with different valences of interactions.
+See the tutorial [IM_Tutorial_03.ipynb](IM_Tutorial_03.ipynb) for more technical explanations and to try different valences of interactions.
+
+## Discussion
+
+Of course, if for any reason, there is a local maximum of smell, the agent will be stuck in it and will never reach the target.
+
+This is when the agent will have to form an explicit goal representation of the target and learn to descend the gradient of smell to get around the local maximum.
+
+This passage from instinctive behaviors to goal-directed behaviors will be our next topic of research.

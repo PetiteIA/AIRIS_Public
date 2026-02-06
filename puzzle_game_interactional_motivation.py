@@ -694,7 +694,7 @@ if __name__ == '__main__':
     # pygame setup
     ai_controlled = False
     if sys.argv.__len__() > 1:
-        if sys.argv[1] == 'ai':
+        if sys.argv[1] == 'imo':
             ai_controlled = True
     pygame.init()
     pygame.display.set_caption('Ai '+str(id(pygame)))
