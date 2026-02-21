@@ -8,48 +8,48 @@ The `imo` argument makes the agent controlled by the Interactional Motivation Sc
 The agent has 6 possible actions that may yield 5 possible outcomes:
 
 | Code |  Action          |
-|---|--------------------|
-| 0 | sniff front         |
-| 1 | move forward       |
-| 2 | sniff left          |
-| 3 | sniff right         |
-| 4 | Turn left          |
-| 5 | Turn right         |
+|------|------------------|
+| 0    | sniff front      |
+| 1    | move forward     |
+| 2    | sniff left       |
+| 3    | sniff right      |
+| 4    | Turn left        |
+| 5    | Turn right       |
 
 
-| Code | Outcome  | Description |
-|------|----------|-------------|
-| 0    | decrease | The smell decreased. |
-| 1    | stable   | The smell remained stable. |
-| 2    | increase | The smell increased. |
+| Code | Outcome  | Description                                     |
+|------|----------|-------------------------------------------------|
+| 0    | decrease | The smell decreased.                            |
+| 1    | stable   | The smell remained stable.                      |
+| 2    | increase | The smell increased.                            |
 | 3    | wall     | The agent bumped into a wall or sniffed a wall. |
-| 4    | eat      | The agent reached and ate the target. |
+| 4    | eat      | The agent reached and ate the target.           |
 
 The valences of interactions are defined as follows:
 
-| Action       | Outcome   | Valence | Description                               |
-|--------------|-----------|---------|-------------------------------------------|
-| move forward | stable    |  10     | There was no smell or it remained stable. |
-| move forward | wall      | -10     | The agent bumped into a wall.             |
-| turn left    | stable    | -3      | Turned toward same smell.             |
-| turn left    | decrease  | -3      | Turned toward weaker smell or wall |
-| turn right   | stable    | -3      | Turned toward same smell.             |
-| turn right   | decrease  | -3      | Turned toward weaker smell or wall |
-| sniff front  | stable    | -1      | Sniff no smell or same in front
-| sniff front  | wall      | -1      | Sniffed a wall in front | 
-| sniff left   | stable    | -1      | Sniff no smell or same on the left |
-| sniff left   | wall      | -1      | Sniffed a wall on the left |
-| sniff right  | stable    | -1      | Sniff no smell or same on the right |
-| sniff right  | wall      | -3      | Sniffed a wall on the right |
-| move forward | decrease  | -1      | The smell decreased as the agent moved forward.  |
-| move forward | increase  |  10     | The smell increased as the agent moved forward.  |
-| move forward | eat       |  10     | The agent reached and ate the target.  |
-| sniff front  | decrease  | -1      | The smell is weaker in front.  |
-| sniff front  | increase  | -1      | The smell is stronger in front.  |
-| sniff left   | decrease  | -1      | The smell is weaker on the left.  |
-| sniff left   | increase  | -1      | The smell is stronger on the left.  |
-| sniff right  | decrease  | -1      | The smell is weaker on the right.  |
-| sniff right  | increase  | -1      | The smell is stronger on the right.  |
+| Action       | Outcome   | Valence | Description                                     |
+|--------------|-----------|---------|-------------------------------------------------|
+| move forward | stable    |  10     | There was no smell or it remained stable.       |
+| move forward | wall      | -10     | The agent bumped into a wall.                   |
+| turn left    | stable    | -3      | Turned toward same smell.                       |
+| turn left    | decrease  | -3      | Turned toward weaker smell or wall              |
+| turn right   | stable    | -3      | Turned toward same smell.                       |
+| turn right   | decrease  | -3      | Turned toward weaker smell or wall              |
+| sniff front  | stable    | -1      | Sniff no smell or same in front                 |
+| sniff front  | wall      | -1      | Sniffed a wall in front                         | 
+| sniff left   | stable    | -1      | Sniff no smell or same on the left              |
+| sniff left   | wall      | -1      | Sniffed a wall on the left                      |
+| sniff right  | stable    | -1      | Sniff no smell or same on the right             |
+| sniff right  | wall      | -3      | Sniffed a wall on the right                     |
+| move forward | decrease  | -1      | The smell decreased as the agent moved forward. |
+| move forward | increase  |  10     | The smell increased as the agent moved forward. |
+| move forward | eat       |  10     | The agent reached and ate the target.           |
+| sniff front  | decrease  | -1      | The smell is weaker in front.                   |
+| sniff front  | increase  | -1      | The smell is stronger in front.                 |
+| sniff left   | decrease  | -1      | The smell is weaker on the left.                |
+| sniff left   | increase  | -1      | The smell is stronger on the left.              |
+| sniff right  | decrease  | -1      | The smell is weaker on the right.               |
+| sniff right  | increase  | -1      | The smell is stronger on the right.             |
 
 The agent initially ignores the meaning of actions and outcomes. 
 It has no knowledge that it exists in a two-dimensional grid with walls and a target emitting smell.
@@ -71,7 +71,7 @@ This run was obtained with the commit [426572f](https://github.com/PetiteIA/AIRI
 ![img/00_movie.gif](img/00_movie.gif)
 
 _Video 1: Example run in which the agent learns the "vigilant behavior". The sniffing interactions are materialized on the right side of the display as flashing squares: the agent can sniff in front, left, or right. Smell gradient is represented in green.
-Bumping interactions are indicated by flashing red walls._
+Bumping interactions are indicated by flashing red walls.  See [00_movie.mp4](img/00_movie.mp4)._
 
 Because the agent begins in the maze, it learns to sniff around to avoid bumping into walls before learning to move toward the target.
 We call "vigilant behavior" this habit of sniffing in front to avoid bumping into walls.
@@ -90,7 +90,7 @@ This run was obtained with the commit [2467ce5](https://github.com/PetiteIA/AIRI
 
 ![Learning in an open grid](img/01_movie.gif)
 
-_Video 2: Example run in which the agent learns the "bold behavior"._
+_Video 2: Example run in which the agent learns the "bold behavior". See [01_movie.mp4](img/01_movie.mp4)._
 
 Because the agent begins its development in a relatively open grid, it quickly learns to approach and eat the target.
 We call "bold behavior" this habit of confidently moving forward without sniffing in front, at the risk of bumping into walls.
