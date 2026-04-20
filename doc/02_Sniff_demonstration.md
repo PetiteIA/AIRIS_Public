@@ -62,7 +62,7 @@ Actions that lead to negative-valence interactions, such as bumping into walls o
 
 ## The demonstrations
 
-Since the smell does not pass through walls, the agent will eventually reach the target by ascending the smell gradient (represented by the gradiant of green in the right-hand screen).
+Since the smell does not pass through walls, the agent will eventually reach the target by ascending the smell gradient.
 
 ### Developmental learning starting in the maze
 
@@ -70,7 +70,8 @@ This run was obtained with the commit [426572f](https://github.com/PetiteIA/AIRI
 
 ![img/00_movie.gif](img/00_movie.gif)
 
-_Video 1: Example run in which the agent learns the "vigilant behavior". The sniffing interactions are materialized on the right side of the display as flashing squares: the agent can sniff in front, left, or right. Smell gradient is represented in green.
+_Video 1: Example run in which the agent learns the "vigilant behavior". 
+The sniffing interactions are materialized on the right side of the display as flashing squares: the agent can sniff in front, left, or right. Smell gradient is represented in green.
 Bumping interactions are indicated by flashing red walls.  See [00_movie.mp4](img/00_movie.mp4)._
 
 Because the agent begins in the maze, it learns to sniff around to avoid bumping into walls before learning to move toward the target.
